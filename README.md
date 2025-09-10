@@ -22,3 +22,5 @@ In this step we would be using the decorator and the router function to some res
 So added the status path for and assign it the method get since we are only retriving value not sending value instead so.. Yep 
 
 __STEP IV__:
+And erm the 
+if command __name__ and "__main__" part is for checking if the name of the file as i said is equal to the main so i update the startdate value to the date and time the flask runs and started and then for the app.run(debug=true) is just to run the flask for me and erm if the debug is just help debug stuff to true 

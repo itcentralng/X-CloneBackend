@@ -1,6 +1,6 @@
 from flask import Flask , jsonify;
 import datetime
-# from flask_cors import CORS;
+
 
 
 app = Flask(__name__);
@@ -18,7 +18,7 @@ async def Status():
     return jsonify(Status);
 
 
-# CORS(app)
+
 if (__name__ == "__main__"):
     # This is to get the app stateTim and assign it to tiemStamp
     starttime = datetime.datetime.now();
