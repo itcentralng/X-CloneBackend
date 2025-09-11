@@ -4,7 +4,7 @@ app = Flask(__name__);
 
 startTime: date;
 
-@app.route("/status" , method=["GET"])
+@app.route("/status" , methods=["GET"])
 async def status():
     status={
         "status":"OK",
@@ -18,6 +18,6 @@ if ( __name__ == "__main__" ):
 
     # -- This is to get the time the backend started
     startTime = date.datetime.now();
-    
+
     app.run(debug=True)
     print("-----XCLONE-backend JUST STARTED------")
