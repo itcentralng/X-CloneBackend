@@ -2,6 +2,9 @@
 This is the backend for the cloning of X formally known as Twitter
 
 
+Python Version (3.11.04) 64bit || 34bit
+
+
 ```THIS IS THE BACKEND OF THE XCLONE``
 AND THIS CAN BE USE AS A GUIDE FOR YOU TO UNDERSTAND THE BACKEND
 
