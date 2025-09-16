@@ -1,5 +1,6 @@
-flask == 3.1.2
-flask[async] == 3.1.2
-psychopg2 == 2.9.10
-DateTime==5.5
-flask-cors == 6.0.1
+flask 
+flask[async]
+psychopg2
+DateTime
+flask-cors
+gunicorn

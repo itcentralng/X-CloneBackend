@@ -1,8 +1,8 @@
 from flask import Flask , jsonify
 import datetime as date;
-app = Flask(__name__);
+app = Flask(__name__)
 
-startTime: date;
+startTime: date
 
 @app.route("/status" , methods=["GET"])
 async def status():
@@ -12,6 +12,7 @@ async def status():
         "uptime": str(date.datetime.now() - startTime),
         "timestamp": str(date.datetime.now())
     }
+
     return jsonify(status)
 
 if ( __name__ == "__main__" ):
