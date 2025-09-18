@@ -4,6 +4,11 @@ app = Flask(__name__)
 
 startTime: date = date.datetime.now()
 
+
+@app.route("/" , methods=["GET"])
+async def Welcome():
+    return{"Message: "+"Welcome to the X-CloneBackend"}
+
 @app.route("/status" , methods=["GET"])
 async def status():
     status={
