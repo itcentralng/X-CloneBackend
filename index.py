@@ -2,12 +2,7 @@ from flask import Flask , jsonify
 import datetime as date
 app = Flask(__name__)
 
-startTime: date = date.datetime.now()
-
-
-@app.route("/" , methods=["GET"])
-async def Welcome():
-    return{"Message: "+"Welcome to the X-CloneBackend"}
+startTime: date
 
 @app.route("/status" , methods=["GET"])
 async def status():
@@ -17,5 +12,13 @@ async def status():
         "uptime": str(date.datetime.now() - startTime),
         "timestamp": str(date.datetime.now())
     }
-
     return jsonify(status)
+
+if ( __name__ == "__main__" ):
+
+    # -- This is to get the time the backend started
+    startTime = date.datetime.now()
+
+
+    app.run(debug=True)
+    print("-----XCLONE-backend JUST STARTED------")
