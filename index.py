@@ -4,6 +4,8 @@ app = Flask(__name__)
 
 startTime: date = date.datetime.now()
 
+##---- This is to get hold of the db so the code won't be bulky for me to keep up
+from db import signupdb
 
 @app.route("/" , methods=["GET"])
 async def Welcome():
@@ -19,3 +21,7 @@ async def status():
     }
 
     return jsonify(status)
+
+@app.route("/signup" , methods=["POST"])
+async def signup():
+    signupdb
