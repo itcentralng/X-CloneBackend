@@ -2,7 +2,14 @@ from flask import Flask , jsonify
 import datetime as date
 app = Flask(__name__)
 
-startTime: date
+startTime: date = date.datetime.now()
+
+##---- This is to get hold of the db so the code won't be bulky for me to keep up
+from db import signupdb
+
+@app.route("/" , methods=["GET"])
+async def Welcome():
+    return{"Message: "+"Welcome to the X-CloneBackend"}
 
 @app.route("/status" , methods=["GET"])
 async def status():
@@ -14,11 +21,6 @@ async def status():
     }
     return jsonify(status)
 
-if ( __name__ == "__main__" ):
-
-    # -- This is to get the time the backend started
-    startTime = date.datetime.now()
-
-
-    app.run(debug=True)
-    print("-----XCLONE-backend JUST STARTED------")
+@app.route("/signup" , methods=["POST"])
+async def signup():
+    signupdb
