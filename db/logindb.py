@@ -3,15 +3,19 @@ import psycopg2
 
 app = Flask(__name__)
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 #-- This is for the getting the connection
 def get_Connection():
     return psycopg2.connect(
-        host="localhost",
-        dbname="Xbackenddb",
-        user="postgres",
-        password="Emmanuel",
-        port="5432"
+        host=str(os.getenv("HOST")),
+        dbname=str(os.getenv("DBNAME")),
+        user=str(os.getenv("USER")),
+        password=os.getenv("PASSWORD"),
+        port=str(os.getenv("PORT"))
     )
 
 
@@ -27,7 +31,7 @@ async def login():
         username = data.get("username")
         password = data.get("password")
     
-        cur.execute("""SELECT * FROM xsignup""")
+        cur.execute("""SELECT * FROM testsignup""")
         result = cur.fetchall()
         for i in result:
             if (username and password in i):

@@ -25,3 +25,7 @@ async def status():
 @app.route("/signup" , methods=["POST"])
 async def signup():
     signupdb
+
+
+if __name__ == ("__main__"):
+    app.run()
