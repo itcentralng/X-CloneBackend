@@ -8,6 +8,8 @@ import psycopg2
 import os
 from dotenv import load_dotenv
 
+import datetime as date
+
 #-- So i can load the env files you know
 load_dotenv()
 
@@ -34,6 +36,7 @@ bcrypt = Bcrypt(app=app)
 @app.route("/signup" , methods=["POST"])
 async def signupdb():
 
+    date.datetime.__format__
     conn = get_Connection()
     
     cur = conn.cursor()
