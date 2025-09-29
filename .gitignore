@@ -1,3 +1,6 @@
 *.pyc
+*.pyo
+.env
 backendVE/
 __pycache__/
+.vscode/
