@@ -5,7 +5,8 @@ app = Flask(__name__)
 startTime: date = date.datetime.now()
 
 ##---- This is to get hold of the db so the code won't be bulky for me to keep up
-from db.signupdb import signupdb
+from db.signupdb import register
+from db.logindb import logindb
 
 @app.route("/" , methods=["GET"])
 async def Welcome():
@@ -24,8 +25,17 @@ async def status():
 
 @app.route("/signup" , methods=["POST"])
 async def signup():
-    result = await signupdb()
+    result = await register()
     return result
+
+@app.route("/login" , method=["POST"])
+async def login():
+    result = await logindb()
+    return result
+
+
+# --- I put this back so i can run it with python so i can be reloading
+# --- If run flask --app (py) run it won't be reloading if their are any changes in the code
 
 if __name__ == ("__main__"):
     app.run(debug=True)

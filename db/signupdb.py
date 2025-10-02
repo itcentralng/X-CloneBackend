@@ -83,8 +83,8 @@ def passwordcheck(password_check: str):
 
 
 #--- This is where the routing is for the signup
-@app.route("/signup" , methods=["POST"])
-async def signupdb():
+@app.route("/register" , methods=["POST"])
+async def register():
 
     conn = get_Connection()
     
@@ -92,6 +92,7 @@ async def signupdb():
     data = request.get_json(force=True, cache=True )
 
     inpusername = data.get("username")
+    inpdate = data.get("dataofbirth")
     inpemail = data.get("email")
     inppassword = data.get("password")
 
@@ -111,9 +112,9 @@ async def signupdb():
     try:
         
         mail = confirmers.mail
-        cur.execute("""INSERT INTO testsignupii (username , email , passwordi)
-                    VALUES (%s , %s , %s) """, 
-                    (confirmers.username , mail , encryp_pass))
+        cur.execute("""INSERT INTO x_users (username , dateofbirth , email , passwordi)
+                    VALUES (%s , %s , %s , %s) """, 
+                    (confirmers.username , inpdate ,mail , encryp_pass))
         
         conn.commit()
         cur.close()
