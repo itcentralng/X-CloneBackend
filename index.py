@@ -1,14 +1,17 @@
 from flask import Flask , jsonify , request
 import datetime as date
 from datetime import datetime
-app = Flask(__name__)
 
+app = Flask(__name__)
 
 startTime: date = date.datetime.now()
 
 ##---- This is to get hold of the db so the code won't be bulky for me to keep up
 from db.signupdb import register
-from db.logindb import logindb
+from db.logindb import logindb , token_required
+
+#---- This is to get hold of the profile section
+from users.users_profile import profile_fetch
 
 
 @app.route("/" , methods=["GET"])
@@ -37,10 +40,11 @@ async def login():
     return result
 
 #--- This is for the profile route
-@app.route("/profile/<id>" , methods=["GET", "PATCH"])
-async def profile(id):
+@app.route("/profile/<username>" , methods=["GET", "PATCH"])
+# @token_required
+async def profile(username: str):
     if request.method == "GET":
-        return {"working on the profile section now": 200}
+        return await profile_fetch(username=username)
     elif request.method == "PATCH":
         return ("You will soon patch don't worry")
 

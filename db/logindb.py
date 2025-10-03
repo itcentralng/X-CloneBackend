@@ -21,19 +21,15 @@ bcrypt = Bcrypt(app=app)
 app.config['SECRET_KEY'] = str(os.getenv("SECRET_KEY"))
 
 #-- This is for the getting the connection
-def get_Connection():
-        return psycopg2.connect(
-            host=str(os.getenv("HOST")),
-            dbname=str(os.getenv("DBNAME")),
-            user=str(os.getenv("USER")),
-            password=os.getenv("PASSWORD"),
-            port=str(os.getenv("PORT"))
-        )
+from connection.connect_db import get_Connection
+conn =  get_Connection()
+    
 
 class confirmers(BaseModel):
     username: str
     mail: str 
     password_confirm: str
+    confirm_hash: str
 
 def emialchecker(email: str):
     check : bool
@@ -63,7 +59,7 @@ def emialchecker(email: str):
 def passwordcheck(password_check: str):
     if len(password_check) > 3:
         confirmers.password_confirm = password_check
-        return {"password correct" :  900}
+        return {"password correct" :  200}
     else:
         return ("Password must be 8char long!")
     
@@ -82,12 +78,31 @@ def token_required(f):
 
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
-            current_user = confirmers.username
+            current_user_mail = confirmers.mail
 
+            curr = conn.cursor()
+            curr.execute("""SELECT * FROM testsignupii WHERE email=%s""" , 
+                         (confirmers.mail))
+            user_row = curr.fetchone()
+            
+            #--- This is to get the payload and give it to jwt
+            user_info={
+                'username':user_row[0],
+                'email':user_row[1],
+            }
+
+            if not user_info:
+                return jsonify({'message': 'Token payload is missing user detials!'}), 401
+
+
+        except jwt.ExpiredSignatureError:
+            return jsonify({'message': 'User Token Expired'}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({'messgae': 'Token is missing'}) , 401
         except:
             return jsonify({'message': 'Token is invalid!'}), 401
 
-        return f(current_user, *args, **kwargs)
+        return f(user_info, *args, **kwargs)
 
     return decorated
 
@@ -95,7 +110,6 @@ def token_required(f):
 @app.route("/login" , methods=["POST"])
 
 async def logindb():
-    conn = get_Connection()
 
     cur = conn.cursor()
     data = request.get_json(force=True, cache=True )
@@ -104,33 +118,54 @@ async def logindb():
     email = data.get("email")
     password = data.get("password")
 
-    print("Email",email)
+    
     print("Password",password)
 
     emialchecker(email=email)
     passwordcheck(password_check=password)
 
-
     try:
-        cur.execute("""SELECT username FROM testsignupii 
-                    WHERE email=%s AND passwordi=%s """,
-                        (confirmers.mail , confirmers.password_confirm)
-                    )
+        print("Email",confirmers.mail)
+
+        cur.execute("""SELECT * FROM testsignupii WHERE email=%s""",
+                    (confirmers.mail,))
         result = cur.fetchone()
         #--- This is to assign the username to the logged in one
         confirmers.username = result[0]
+        confirmers.confirm_hash = result[2]
 
-        token = jwt.encode({'email': confirmers.mail, 
+        token = jwt.encode({
+                            'email': confirmers.mail, 
                             'exp': datetime.now(timezone.utc) + timedelta(minutes=45)
                             },
                             app.config['SECRET_KEY'], 
                             algorithm="HS256")
         
         response = make_response(jsonify({'message': 'Login successful'}, 200))
-        response.set_cookie('jwt_token', token)
+        response.set_cookie('jwt_token', token, 
+                            httponly=True, 
+                            max_age=2700,
+                            secure=True,
+                            samesite='Lax')
         
-        if result :
-            return {"Welcome Back":200 , "token":token}
+        # return token
+        
+        password_match = bcrypt.check_password_hash(pw_hash=confirmers.confirm_hash , password=confirmers.password_confirm)
+
+        print("bool password match: ", password_match)
+        if result and password_match:
+            # {
+            #     'user':{
+            #        'username':result[0],
+            #        'email':result[1], 
+            #     },
+            #     'Welcome Back':200,
+            #     'token':token,
+            # }
+            return token
+        
+        elif not result or not password_match:
+            return {"Wrong User Infomation": 404}
         elif not result:
             return {"User not found":500}
         else :
@@ -138,7 +173,7 @@ async def logindb():
 
 
     except Exception as e:
-        return (f"fatal Error when inserting {e}")
+        return (f"fatal Error when selecting {e}")
     
 
 if __name__ == "__main__":
