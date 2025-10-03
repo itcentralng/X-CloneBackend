@@ -5,9 +5,20 @@ import os
 from index import get_Connection
 app = Flask(__name__)
 load_dotenv()
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 #-- This is for the getting the connection
-
+def get_Connection():
+    return psycopg2.connect(
+        host=str(os.getenv("HOST")),
+        dbname=str(os.getenv("DBNAME")),
+        user=str(os.getenv("USER")),
+        password=os.getenv("PASSWORD"),
+        port=str(os.getenv("PORT"))
+    )
 
 
 @app.route("/login" , methods=["POST"])
@@ -22,7 +33,7 @@ async def login():
         username = data.get("username")
         password = data.get("password")
     
-        cur.execute("""SELECT * FROM xsignup""")
+        cur.execute("""SELECT * FROM testsignup""")
         result = cur.fetchall()
         for i in result:
             if (username and password in i):
