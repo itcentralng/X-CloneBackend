@@ -1,18 +1,13 @@
 from flask import Flask , request , jsonify
 import psycopg2
-
+from dotenv import load_dotenv
+import os
+from index import get_Connection
 app = Flask(__name__)
-
+load_dotenv()
 
 #-- This is for the getting the connection
-def get_Connection():
-    return psycopg2.connect(
-        host="localhost",
-        dbname="Xbackenddb",
-        user="postgres",
-        password="Emmanuel",
-        port="5432"
-    )
+
 
 
 @app.route("/login" , methods=["POST"])

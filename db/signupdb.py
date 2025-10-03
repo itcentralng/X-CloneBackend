@@ -1,16 +1,18 @@
 from flask import Flask , request , jsonify
-
+import os
+from dotenv import load_dotenv
+load_dotenv()
 #--for the connection of the db
 import psycopg2
 
 
 def get_Connection ():
      return psycopg2.connect(
-        host="localhost",
-        dbname="Xbackenddb",
-        user="postgres",
-        password="Emmanuel",
-        port="5432"
+            host=os.getenv("DB_HOST"),
+            dbname=os.getenv("DB_NAME"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            port=os.getenv("DB_PORT")
     )
 
 

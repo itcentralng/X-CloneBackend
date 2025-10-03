@@ -1,3 +1,4 @@
 *.pyc
 backendVE/
 __pycache__/
+.env
