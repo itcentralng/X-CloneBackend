@@ -6,7 +6,7 @@ load_dotenv()
 import psycopg2
 
 
-def get_Connection ():
+def get_Connection():
      return psycopg2.connect(
             host=os.getenv("DB_HOST"),
             dbname=os.getenv("DB_NAME"),

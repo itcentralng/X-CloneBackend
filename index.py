@@ -1,5 +1,6 @@
 import dotenv
 import psycopg2
+import jwt
 import os
 from flask import Flask , jsonify,request
 import datetime as date
@@ -54,7 +55,7 @@ def user():
     except psycopg2.Error as e:
         return {"error": str(e)}
 #Attahir Week 4
-import jwt
+
 @app.route('/users/me',methods=["GET"])
 def me():
 
@@ -68,13 +69,17 @@ def me():
     
     '''
     
+    
     app.config['SECRET_KEY'] = 'v0gXEKYBouAqIUbw'
+    if not request.get.headers('Authorization'):
+        return jsonify({'Unauthorized Request':404})
     auth_header = request.get.headers('Authorization')
     jwt_token = auth_header.split()[1]
     payload = jwt.decode(jwt_token,app.config['SECRET_KEY'],algorithms=['HS256'])
     email = payload['email']
     cur.execute(f"SELECT * FROM xsignup WHERE email = {email}")
     user = cur.fetchall()
+    
     return jsonify({'User_Info':user})
 
 
