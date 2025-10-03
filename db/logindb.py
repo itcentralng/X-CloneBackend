@@ -1,31 +1,99 @@
-from flask import Flask , request , jsonify
+from flask import Flask , request , jsonify , make_response 
+from pydantic import BaseModel
+from functools import wraps
 import psycopg2
 
+#--- This is for the jwt
 import jwt
+from datetime import timedelta, timezone , datetime
+
 
 ### for the bycrpt
 from flask_bcrypt import Bcrypt
-
-app = Flask(__name__)
-bcrypt = Bcrypt(app=app)
 
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
+app = Flask(__name__)
+bcrypt = Bcrypt(app=app)
+app.config['SECRET_KEY'] = str(os.getenv("SECRET_KEY"))
+
 #-- This is for the getting the connection
 def get_Connection():
-    return psycopg2.connect(
-        host=str(os.getenv("HOST")),
-        dbname=str(os.getenv("DBNAME")),
-        user=str(os.getenv("USER")),
-        password=os.getenv("PASSWORD"),
-        port=str(os.getenv("PORT"))
-    )
+        return psycopg2.connect(
+            host=str(os.getenv("HOST")),
+            dbname=str(os.getenv("DBNAME")),
+            user=str(os.getenv("USER")),
+            password=os.getenv("PASSWORD"),
+            port=str(os.getenv("PORT"))
+        )
+
+class confirmers(BaseModel):
+    username: str
+    mail: str 
+    password_confirm: str
+
+def emialchecker(email: str):
+    check : bool
+    if len(email) > 13:
+        print("Email is more than 13 characters", email)
+        if "@" in email and ".com" in email:
+            confirmers.mail = email
+            check = True
+        else :
+            check = False
+        
+        if check:
+            print("The email is a valid one" )
+        elif not check:
+            print("This is not a valid mail")
+
+        try:
+            print(confirmers.mail)
+        except Exception as e:
+            print(f"{e} this is the reason")
+            return ""
+    else:
+        print("This is email is less than < 13 characters")
+        return ("Email Not Correct")
+    
+
+def passwordcheck(password_check: str):
+    if len(password_check) > 3:
+        confirmers.password_confirm = password_check
+        return {"password correct" :  900}
+    else:
+        return ("Password must be 8char long!")
+    
+
+
+# Token required decorator 
+# This is a function for the jwt verification and decoding
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.cookies.get('jwt_token')
+
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+            current_user = confirmers.username
+
+        except:
+            return jsonify({'message': 'Token is invalid!'}), 401
+
+        return f(current_user, *args, **kwargs)
+
+    return decorated
 
 
 @app.route("/login" , methods=["POST"])
+
 async def logindb():
     conn = get_Connection()
 
@@ -39,22 +107,34 @@ async def logindb():
     print("Email",email)
     print("Password",password)
 
+    emialchecker(email=email)
+    passwordcheck(password_check=password)
+
 
     try:
-        data = request.get_json(cache=True , force=True)
-    
         cur.execute("""SELECT username FROM testsignupii 
                     WHERE email=%s AND passwordi=%s """,
-                        (email , password)
+                        (confirmers.mail , confirmers.password_confirm)
                     )
         result = cur.fetchone()
+        #--- This is to assign the username to the logged in one
+        confirmers.username = result[0]
 
+        token = jwt.encode({'email': confirmers.mail, 
+                            'exp': datetime.now(timezone.utc) + timedelta(minutes=45)
+                            },
+                            app.config['SECRET_KEY'], 
+                            algorithm="HS256")
         
-        # return result[0]
+        response = make_response(jsonify({'message': 'Login successful'}, 200))
+        response.set_cookie('jwt_token', token)
+        
         if result :
-            return {"Welcome Back :":200}
+            return {"Welcome Back":200 , "token":token}
         elif not result:
-            return {"User not found :":404}
+            return {"User not found":500}
+        else :
+            return jsonify({"error in codebase: ", 400})
 
 
     except Exception as e:

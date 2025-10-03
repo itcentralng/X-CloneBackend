@@ -19,15 +19,16 @@ from flask_bcrypt import Bcrypt
 
 from pydantic import BaseModel
 
-def get_Connection():
-     return psycopg2.connect(
-         host=str(os.getenv("HOST")),
-         dbname=str(os.getenv("DBNAME")),
-         user=str(os.getenv("USER")),
-         password=os.getenv("PASSWORD"),
-         port=str(os.getenv("PORT"))
-     )
 
+#-- This is for the getting the connection
+def get_Connection():
+        return psycopg2.connect(
+            host=str(os.getenv("HOST")),
+            dbname=str(os.getenv("DBNAME")),
+            user=str(os.getenv("USER")),
+            password=os.getenv("PASSWORD"),
+            port=str(os.getenv("PORT"))
+        )
 
 
 
@@ -66,11 +67,14 @@ def emialchecker(email: str):
         return ("Email can't be added")
     
 def usernamechecker(username_check: str):
-    if len(username_check) > 4:
-        confirmers.username = username_check
-        return {"user sucessfull" :  200}
-    else:
-        return ("This is not a valid username!")
+    try:
+        if len(username_check) > 4:
+            confirmers.username = username_check
+            return {"user sucessfull" :  200}
+        else:
+            return ("This is not a valid username!")
+    except:
+        return jsonify({"username error: ", 500})
     
 
 def passwordcheck(password_check: str):
@@ -112,9 +116,9 @@ async def register():
     try:
         
         mail = confirmers.mail
-        cur.execute("""INSERT INTO x_users (username , dateofbirth , email , passwordi)
-                    VALUES (%s , %s , %s , %s) """, 
-                    (confirmers.username , inpdate ,mail , encryp_pass))
+        cur.execute("""INSERT INTO testsignupii (username , email , passwordi)
+                    VALUES (%s , %s , %s) """, 
+                    (confirmers.username ,mail , encryp_pass))
         
         conn.commit()
         cur.close()
@@ -130,7 +134,7 @@ async def register():
 
 #--- I kept this for so i can use python command to run it ---
 if __name__ == "__main__":
+    app.run(debug=True)
     print(confirmers.username)
     print(confirmers.email)
     print(confirmers.password_confirm)
-    app.run(debug=True)
