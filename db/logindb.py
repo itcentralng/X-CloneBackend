@@ -4,11 +4,6 @@ from dotenv import load_dotenv
 import os
 app = Flask(__name__)
 load_dotenv()
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
 #-- This is for the getting the connection
 def get_Connection():
     return psycopg2.connect(

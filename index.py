@@ -1,14 +1,15 @@
-import dotenv
+from db.signupdb import signupdb
 import psycopg2
 import jwt
 import os
 from flask import Flask , jsonify,request
 import datetime as date
+from dotenv import load_dotenv
 app = Flask(__name__)
 
 
 startTime: date = date.datetime.now()
-os.load_dotenv()
+load_dotenv()
 def get_Connection():
     return psycopg2.connect(
         host=os.getenv("HOST"),
@@ -20,7 +21,7 @@ def get_Connection():
     )
 
 ##---- This is to get hold of the db so the code won't be bulky for me to keep up
-from db.signupdb import signupdb
+
 
 @app.route("/" , methods=["GET"])
 async def Welcome():

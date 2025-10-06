@@ -1,21 +1,16 @@
 from flask import Flask , request , jsonify
+from flask_bcrypt import Bcrypt
 import os
 from dotenv import load_dotenv
-load_dotenv()
 #--for the connection of the db
 import psycopg2
-
-
-#---This is so i can get the values from my .env
-import os
-from dotenv import load_dotenv
 
 #-- So i can load the env files you know
 load_dotenv()
 
 
 # --- This is for the password encryption
-from flask_bcrypt import Bcrypt
+
 
 def get_Connection():
      return psycopg2.connect(
