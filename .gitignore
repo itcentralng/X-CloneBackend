@@ -3,5 +3,4 @@
 .env
 backendVE/
 __pycache__/
-.env
 .vscode/

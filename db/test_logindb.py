@@ -1,11 +1,11 @@
 import pytest
 import requests
 def user():
-    return {"username": "testuser", "password": "testpass"}
+    return {"username": "testuser","email":"testuser@gmail.com", "password": "testpass"}
 def wrong_pass():
-    return {"username": "wronguser", "password": "wrongpass"}
+    return {"username": "testuser","email":"testuser@gmail.com", "password": "wrongpass"}
 def wrong_user():
-    return {"username": "wronguser", "password": "testpass"}
+    return {"username": "wronguser","email":"testuser@gmail.com", "password": "testpass"}
    
 def test_login_success(user):
     response = requests.post("/login", json=user)
@@ -21,4 +21,4 @@ def test_invalid_username(wrong_user):
     
 def test_user_not_found():
     response = requests.post("/login", json={})
-    assert response.status_code == 404
+    assert response.status_code == 400
