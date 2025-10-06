@@ -1,4 +1,4 @@
-from db.signupdb import signupdb
+from db import signupdb
 import psycopg2
 import jwt
 import os
@@ -44,8 +44,7 @@ async def signup():
     result = await signupdb()
     return result
 
-if __name__ == ("__main__"):
-    app.run(debug=True)
+
 conn = signupdb.get_Connection()
 cur = conn.cursor()  
 
@@ -99,3 +98,5 @@ def alltweet():
 
 cur.close()
 conn.close()  
+if __name__ == ("__main__"):
+    app.run(debug=True)
