@@ -44,7 +44,7 @@ async def login():
 
 #--- This is for the profile route
 @app.route("/profile/<username>" , methods=["GET", "PATCH"])
-# @token_required
+@token_required
 async def profile(username: str):
     if request.method == "GET":
         return await profile_fetch(username=username)
@@ -53,6 +53,7 @@ async def profile(username: str):
 
 
 @app.route("/tweet/create" , methods=["POST"])
+@token_required
 async def Post_tweet():
     result = await Posting_tweet()
     return result
