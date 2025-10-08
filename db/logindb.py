@@ -127,7 +127,7 @@ async def logindb():
     try:
         print("Email",confirmers.mail)
 
-        cur.execute("""SELECT * FROM x_clonetable WHERE email=%s""",
+        cur.execute("""SELECT * FROM testsignupii WHERE email=%s""",
                     (confirmers.mail,))
         result = cur.fetchone()
         #--- This is to assign the username to the logged in one
@@ -154,15 +154,15 @@ async def logindb():
 
         print("bool password match: ", password_match)
         if result and password_match:
-           return {
-                "user":{
-                   'username':result[0],
-                   'email':result[1], 
-                },
-                "Welcome Back":200,
-                "token":token,
-            }
-             
+            # {
+            #     'user':{
+            #        'username':result[0],
+            #        'email':result[1], 
+            #     },
+            #     'Welcome Back':200,
+            #     'token':token,
+            # }
+            return token
         
         elif not result or not password_match:
             return {"Wrong User Infomation": 404}
