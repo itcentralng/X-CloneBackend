@@ -41,7 +41,7 @@ async def login():
 
 #--- This is for the profile route
 @app.route("/profile/<username>" , methods=["GET", "PATCH"])
-# @token_required
+@token_required
 async def profile(username: str):
     if request.method == "GET":
         return await profile_fetch(username=username)
