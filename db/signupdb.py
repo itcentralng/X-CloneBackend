@@ -112,7 +112,7 @@ async def register():
         mail = confirmers.mail
         cur.execute("""INSERT INTO x_clonetable (username , email , passwordacc , dob)
                     VALUES (%s , %s , %s , %s) """, 
-                    (confirmers.username ,mail , encryp_pass , date))
+                    (confirmers.username ,mail , encryp_pass , inpdate))
 
         print("Username:", confirmers.username)
         print("Mail: ", mail)

@@ -53,7 +53,7 @@ async def profile(username: str):
 
 
 @app.route("/tweet/create" , methods=["POST"])
-@token_required
+# @token_required
 async def Post_tweet():
     result = await Posting_tweet()
     return result
