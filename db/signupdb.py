@@ -97,6 +97,7 @@ async def register():
     usernamechecker(inpusername)
     passwordcheck(inppassword)
 
+    date: str = '2025-10-08'
     encryp_pass= bcrypt.generate_password_hash(password=confirmers.password_confirm).decode('utf-8')
 
     if confirmers.username == "" :
@@ -109,9 +110,14 @@ async def register():
     try:
         
         mail = confirmers.mail
-        cur.execute("""INSERT INTO testsignupii (username , email , passwordi)
-                    VALUES (%s , %s , %s) """, 
-                    (confirmers.username ,mail , encryp_pass))
+        cur.execute("""INSERT INTO x_clonetable (username , email , passwordacc , dob)
+                    VALUES (%s , %s , %s , %s) """, 
+                    (confirmers.username ,mail , encryp_pass , date))
+
+        print("Username:", confirmers.username)
+        print("Mail: ", mail)
+        print("encryp_pass: ", encryp_pass)
+        print("date: ", date)
         
         conn.commit()
         cur.close()
@@ -119,7 +125,12 @@ async def register():
         
 
         return jsonify({"status": "success", "username": confirmers.username, "email": confirmers.mail , "password": encryp_pass})
-        
+    
+    except psycopg2.IntegrityError as error:
+        if "duplicate key value violates unique constraint" in str(error):
+            return {"User Email Exist Already": 500}
+        else :
+            return (f"fatal error in database")
     except Exception as e:
         return (f"fatal Error when inserting {e}")
 

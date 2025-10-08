@@ -27,15 +27,15 @@ async def profile_fetch(username):
             elif not result:
                 return {"USER DOES NOT EXIST !": 404}
             
-        elif request.method == "PATCH":
-            return {"working patch section " : 200}
-        
+       
         #----- THIS IS TO PATCH SOME USERS
         if request.method == "PATCH":
             return {"Hmmmm Still Patching", 404}
         
     except psycopg2.Error as e:
         return jsonify({e} , 404)
+    except Exception as error:
+        return jsonify({f"Fatal error at back {error}"}, 500)
 
 
 if __name__ == "__main__":
