@@ -1,8 +1,4 @@
-import dotenv
-import psycopg2
-import jwt
-import os
-from flask import Flask , jsonify,request
+from flask import Flask , jsonify , request
 import datetime as date
 from datetime import datetime
 
@@ -27,6 +23,9 @@ from db.logindb import logindb , token_required
 
 #---- This is to get hold of the profile section
 from users.users_profile import profile_fetch
+
+#--- This is to run the tweets endpoint in index
+from tweet.tweets import Posting_tweet
 
 
 @app.route("/" , methods=["GET"])
@@ -63,6 +62,14 @@ async def profile(username: str):
         return await profile_fetch(username=username)
     elif request.method == "PATCH":
         return ("You will soon patch don't worry")
+
+
+@app.route("/tweet/create" , methods=["POST"])
+# @token_required
+async def Post_tweet():
+    result = await Posting_tweet()
+    return result
+
 
 
 # --- I put this back so i can run it with python so i can be reloading
