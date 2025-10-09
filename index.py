@@ -1,21 +1,14 @@
 from flask import Flask , jsonify , request
 import datetime as date
 from datetime import datetime
+import jwt
+import psycopg2
 
 app = Flask(__name__)
-
+from connection.connect_db import get_Connection
 
 startTime: date = date.datetime.now()
-os.load_dotenv()
-def get_Connection():
-    return psycopg2.connect(
-        host=os.getenv("HOST"),
-        dbname=os.getenv("NAME"),
-        user=os.getenv("USER"),
-        password=os.getenv("PASSWORD"),
-        port=os.getenv("PORT"),
-        sslmode="require"
-    )
+
 
 ##---- This is to get hold of the db so the code won't be bulky for me to keep up
 from db.signupdb import register
@@ -27,6 +20,8 @@ from users.users_profile import profile_fetch
 #--- This is to run the tweets endpoint in index
 from tweet.tweets import Posting_tweet
 
+conn = get_Connection()
+cur = conn.cursor()
 
 @app.route("/" , methods=["GET"])
 async def Welcome():
@@ -72,20 +67,12 @@ async def Post_tweet():
 
 
 
-# --- I put this back so i can run it with python so i can be reloading
-# --- If run flask --app (py) run it won't be reloading if their are any changes in the code
-
-if __name__ == ("__main__"):
-    app.run(debug=True)
-conn = signupdb.get_Connection()
-cur = conn.cursor()  
-
 #Week 2 Task Attahir
 @app.route("/users",methods=["GET"])
 def user():
     try:
 
-        cur.execute("""SELECT * FROM xsignup""")
+        cur.execute("""SELECT * FROM x_db""")
         users = cur.fetchall()
         return jsonify({"users": users})
         
@@ -130,3 +117,10 @@ def alltweet():
 
 cur.close()
 conn.close()  
+
+
+# --- I put this back so i can run it with python so i can be reloading
+# --- If run flask --app (py) run it won't be reloading if their are any changes in the code
+
+if __name__ == ("__main__"):
+    app.run(debug=True)
