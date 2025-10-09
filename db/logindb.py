@@ -14,14 +14,16 @@ from flask_bcrypt import Bcrypt
 import os
 from dotenv import load_dotenv
 
+#-- This is for the getting the connection
+from connection.connect_db import get_Connection
+
 load_dotenv()
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app=app)
 app.config['SECRET_KEY'] = str(os.getenv("SECRET_KEY"))
 
-#-- This is for the getting the connection
-from connection.connect_db import get_Connection
+
 conn =  get_Connection()
     
 
@@ -47,7 +49,7 @@ def emialchecker(email: str):
             print("This is not a valid mail")
 
         try:
-            print(confirmers.mail)
+            print(confirmers.username)
         except Exception as e:
             print(f"{e} this is the reason")
             return ""
@@ -81,14 +83,14 @@ def token_required(f):
             current_user_mail = confirmers.mail
 
             curr = conn.cursor()
-            curr.execute("""SELECT * FROM testsignupii WHERE email=%s""" , 
+            curr.execute("""SELECT * FROM x_db WHERE email=%s""" , 
                          (confirmers.mail))
             user_row = curr.fetchone()
             
             #--- This is to get the payload and give it to jwt
             user_info={
-                'username':user_row[0],
-                'email':user_row[1],
+                'username':user_row[1],
+                'email':user_row[2],
             }
 
             if not user_info:
@@ -108,7 +110,6 @@ def token_required(f):
 
 
 @app.route("/login" , methods=["POST"])
-
 async def logindb():
 
     cur = conn.cursor()
@@ -118,21 +119,21 @@ async def logindb():
     email = data.get("email")
     password = data.get("password")
 
-    
-    print("Password",password)
 
     emialchecker(email=email)
     passwordcheck(password_check=password)
 
+    # print("Password",confirmers.confirm_hash)
+
     try:
         print("Email",confirmers.mail)
 
-        cur.execute("""SELECT * FROM testsignupii WHERE email=%s""",
+        cur.execute("""SELECT username , passwordacc , email FROM x_db WHERE email=%s""",
                     (confirmers.mail,))
         result = cur.fetchone()
         #--- This is to assign the username to the logged in one
         confirmers.username = result[0]
-        confirmers.confirm_hash = result[2]
+        confirmers.confirm_hash = result[1]
 
         token = jwt.encode({
                             'email': confirmers.mail, 
@@ -152,29 +153,28 @@ async def logindb():
         
         password_match = bcrypt.check_password_hash(pw_hash=confirmers.confirm_hash , password=confirmers.password_confirm)
 
-        print("bool password match: ", password_match)
+        # print("Hashed Password: ", confirmers.confirm_hash)
         if result and password_match:
-            # {
-            #     'user':{
-            #        'username':result[0],
-            #        'email':result[1], 
-            #     },
-            #     'Welcome Back':200,
-            #     'token':token,
-            # }
-            return token
+            return {
+                    'user':{
+                    'username':result[0],
+                    'email': result[2], 
+                    },
+                    'Welcome Back':200,
+                    'token':token,
+                   }
         
         elif not result or not password_match:
-            return {"Wrong User Infomation": 404}
+            return {'Wrong User Infomation': 500}
         elif not result:
-            return {"User not found":500}
+            return {'User not found':500}
         else :
-            return jsonify({"error in codebase: ", 400})
+            return {'Error in backendcodebase': 404}
 
 
     except Exception as e:
-        return (f"fatal Error when selecting {e}")
-    
+        # return (f"fatal Error when selecting {e}")
+        print("error")
 
 if __name__ == "__main__":
     print("Login Backend Started")

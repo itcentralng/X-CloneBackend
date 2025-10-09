@@ -6,14 +6,7 @@ load_dotenv()
 import psycopg2
 
 
-#---This is so i can get the values from my .env
-import os
-from dotenv import load_dotenv
-
 import datetime as date
-
-#-- So i can load the env files you know
-load_dotenv()
 
 
 # --- This is for the password encryption
@@ -99,7 +92,6 @@ async def register():
     usernamechecker(inpusername)
     passwordcheck(inppassword)
 
-    date: str = '2025-10-08'
     encryp_pass= bcrypt.generate_password_hash(password=confirmers.password_confirm).decode('utf-8')
 
     if confirmers.username == "" :
@@ -112,9 +104,9 @@ async def register():
     try:
         
         mail = confirmers.mail
-        cur.execute("""INSERT INTO x_clonetable (username , email , passwordacc , dob)
-                    VALUES (%s , %s , %s , %s) """, 
-                    (confirmers.username ,mail , encryp_pass , inpdate))
+        cur.execute("""INSERT INTO x_db (id , username , email, dob , passwordacc)
+                    VALUES (%s , %s , %s , %s , %s) """, 
+                    (1 , confirmers.username ,mail , inpdate , encryp_pass))
 
         print("Username:", confirmers.username)
         print("Mail: ", mail)
