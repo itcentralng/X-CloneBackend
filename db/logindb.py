@@ -1,7 +1,6 @@
 from flask import Flask , request , jsonify , make_response 
 from pydantic import BaseModel
 from functools import wraps
-import psycopg2
 
 #--- This is for the jwt
 import jwt
@@ -11,11 +10,13 @@ from datetime import timedelta, timezone , datetime
 ### for the bycrpt
 from flask_bcrypt import Bcrypt
 
+import psycopg2
 import os
 from dotenv import load_dotenv
 
 #-- This is for the getting the connection
-from connection.connect_db import get_Connection
+# from connection import connect_db
+
 
 load_dotenv()
 
@@ -24,6 +25,15 @@ bcrypt = Bcrypt(app=app)
 app.config['SECRET_KEY'] = str(os.getenv("SECRET_KEY"))
 
 
+#-- This is for the getting the connection
+def get_Connection():
+        return psycopg2.connect(
+            host=str(os.getenv("HOST")),
+            dbname=str(os.getenv("DBNAME")),
+            user=str(os.getenv("USER")),
+            password=os.getenv("PASSWORD"),
+            port=str(os.getenv("PORT"))
+        )
 conn =  get_Connection()
     
 
