@@ -3,9 +3,11 @@ import datetime as date
 from datetime import datetime
 import jwt
 import psycopg2
+import os
+from dotenv import load_dotenv
 
 app = Flask(__name__)
-from connection.connect_db import get_Connection
+# from db.connection.connect_db import get_Connection
 
 startTime: date = date.datetime.now()
 
@@ -20,6 +22,17 @@ from users.users_profile import profile_fetch
 #--- This is to run the tweets endpoint in index
 from tweet.tweets import Posting_tweet
 
+load_dotenv()
+
+#-- This is for the getting the connection
+def get_Connection():
+        return psycopg2.connect(
+            host=str(os.getenv("HOST")),
+            dbname=str(os.getenv("DBNAME")),
+            user=str(os.getenv("USER")),
+            password=os.getenv("PASSWORD"),
+            port=str(os.getenv("PORT"))
+        )
 conn = get_Connection()
 cur = conn.cursor()
 

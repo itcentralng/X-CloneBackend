@@ -14,9 +14,18 @@ from flask_bcrypt import Bcrypt
 
 from pydantic import BaseModel
 
+# from connection import 
 
-from connection.connect_db import get_Connection
-conn =  get_Connection()
+#-- This is for the getting the connection
+def get_Connection():
+        return psycopg2.connect(
+            host=str(os.getenv("HOST")),
+            dbname=str(os.getenv("DBNAME")),
+            user=str(os.getenv("USER")),
+            password=os.getenv("PASSWORD"),
+            port=str(os.getenv("PORT"))
+        )
+conn = get_Connection()
 
 
 
