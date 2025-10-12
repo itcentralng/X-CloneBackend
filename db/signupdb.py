@@ -23,7 +23,8 @@ def get_Connection():
             dbname=str(os.getenv("DBNAME")),
             user=str(os.getenv("USER")),
             password=os.getenv("PASSWORD"),
-            port=str(os.getenv("PORT"))
+            port=str(os.getenv("PORT")),
+            sslmode="require"
         )
 conn = get_Connection()
 
