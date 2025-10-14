@@ -17,15 +17,8 @@ from pydantic import BaseModel
 # from connection import 
 
 #-- This is for the getting the connection
-def get_Connection():
-        return psycopg2.connect(
-            host=str(os.getenv("HOST")),
-            dbname=str(os.getenv("DBNAME")),
-            user=str(os.getenv("USER")),
-            password=os.getenv("PASSWORD"),
-            port=str(os.getenv("PORT")),
-            sslmode="require"
-        )
+
+from connection.connect_db import get_Connection
 conn = get_Connection()
 
 
@@ -142,7 +135,7 @@ async def register():
 
 #--- I kept this for so i can use python command to run it ---
 if __name__ == "__main__":
-    app.run(debug=True)
-    print(confirmers.username)
-    print(confirmers.email)
-    print(confirmers.password_confirm)
+    #--- To get the port from the env
+    port = os.getenv('PORT', 5000)
+    #--- TO run the code so i can debug 
+    app.run(debug=True , host="0.0.0.0" , port=port)
