@@ -41,5 +41,8 @@ async def Posting_tweet():
         return {f" Error from the tweet Backend !!{e}"}
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    #--- To get the port from the env
+    port = os.getenv('PORT', 5000)
+    #--- TO run the code so i can debug 
+    app.run(debug=True , host="0.0.0.0" , port=port)
     print("X tweets Active")

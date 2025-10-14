@@ -8,15 +8,8 @@ load_dotenv()
 
 # from connection.connect_db import get_Connection
 #-- This is for the getting the connection
-def get_Connection():
-        return psycopg2.connect(
-            host=str(os.getenv("HOST")),
-            dbname=str(os.getenv("DBNAME")),
-            user=str(os.getenv("USER")),
-            password=os.getenv("PASSWORD"),
-            port=str(os.getenv("PORT")),
-            sslmode="require"
-        )
+
+from connection.connect_db import get_Connection
 conn =  get_Connection()
 
 @app.route("/profile/<username>", methods=["GET", "PATCH"])
