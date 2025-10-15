@@ -129,8 +129,5 @@ conn.close()
 # --- If run flask --app (py) run it won't be reloading if their are any changes in the code
 
 if __name__ == ("__main__"):
-
-    #--- To get the port from the env
-    port = os.getenv('PORT', 5000)
     #--- TO run the code so i can debug 
-    app.run(debug=True , host="0.0.0.0" , port=port)
+    app.run(debug=True)
