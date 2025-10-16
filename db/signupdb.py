@@ -31,6 +31,7 @@ class confirmers(BaseModel):
     username: str 
     mail: str 
     password_confirm: str
+    random_size: 20
 
 #--- This is the regex function for looping and check if the email ends with @gmail.com
 def emialchecker(email: str):
@@ -96,6 +97,7 @@ async def register():
     passwordcheck(inppassword)
 
     encryp_pass= bcrypt.generate_password_hash(password=confirmers.password_confirm).decode('utf-8')
+    random_id = os.urandom(confirmers.random_size)
 
     if confirmers.username == "" :
         return {"Sorry your username is null": 310}
@@ -109,11 +111,10 @@ async def register():
         mail = confirmers.mail
         cur.execute("""INSERT INTO x_db (id , username , email, dob , passwordacc)
                     VALUES (%s , %s , %s , %s , %s) """, 
-                    (1 , confirmers.username ,mail , inpdate , encryp_pass))
+                    (random_id , confirmers.username ,mail , inpdate , encryp_pass))
 
         print("Username:", confirmers.username)
         print("Mail: ", mail)
-        print("encryp_pass: ", encryp_pass)
         print("date: ", date)
         
         conn.commit()

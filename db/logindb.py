@@ -153,6 +153,10 @@ async def logindb():
                             secure=True,
                             samesite='Lax')
         
+        conn.commit()
+        cur.close()
+        conn.close()
+        
         # return token
         
         password_match = bcrypt.check_password_hash(pw_hash=confirmers.confirm_hash , password=confirmers.password_confirm)
