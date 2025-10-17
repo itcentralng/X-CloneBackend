@@ -7,38 +7,38 @@ from dotenv import load_dotenv
 app = Flask(__name__)
 
 load_dotenv()
-#-- This is for the getting the connection
-def get_Connection():
-        return psycopg2.connect(
-            host=str(os.getenv("HOST")),
-            dbname=str(os.getenv("DBNAME")),
-            user=str(os.getenv("USER")),
-            password=os.getenv("PASSWORD"),
-            port=str(os.getenv("PORT"))
-        )
 
-conn = get_Connection()
+#-- This is for the getting the connection
+# from connection.connect_db import get_Connection
+from connection.connect_db import get_Connection
 
 
 @app.route("/tweet/create" , methods=["POST"])
 async def Posting_tweet():
     try:
+        conn = get_Connection()
+
         cur = conn.cursor()
-        data = request.get_json(force=True, cache=True )
+        data = request.get_json(force=True, cache=True)
+        username = data.get("username")
         tweeting = data.get("tweeting")
 
-        cur.execute("INSERT INTO tweets values(%s)", 
-                    (tweeting,))
-        
+        cur.execute("""INSERT INTO tweet_table (username , tweets) 
+                                VALUES(%s,%s)""", 
+                                (username,tweeting))
+
+        conn.commit()
         cur.close()
         conn.close()
 
-        return jsonify({"status": "success","postadded":f"{tweeting}"} , 200)
+        return jsonify({"Post":f"{tweeting}"}), 200
 
-
+    except psycopg2.IntegrityError as error:
+         return {"DB Error": error}
     except Exception as e:
         return {f" Error from the tweet Backend !!{e}"}
 
 if __name__ == "__main__":
+    #--- TO run the code so i can debug 
     app.run(debug=True)
     print("X tweets Active")

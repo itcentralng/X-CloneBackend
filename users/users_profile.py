@@ -8,14 +8,8 @@ load_dotenv()
 
 # from connection.connect_db import get_Connection
 #-- This is for the getting the connection
-def get_Connection():
-        return psycopg2.connect(
-            host=str(os.getenv("HOST")),
-            dbname=str(os.getenv("DBNAME")),
-            user=str(os.getenv("USER")),
-            password=os.getenv("PASSWORD"),
-            port=str(os.getenv("PORT"))
-        )
+
+from connection.connect_db import get_Connection
 conn =  get_Connection()
 
 @app.route("/profile/<username>", methods=["GET", "PATCH"])
@@ -48,5 +42,8 @@ async def profile_fetch(username):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    #--- To get the port 
+    port = os.getenv('PORT', 5000)
+
+    app.run(debug=True ,host="0.0.0.0", port= port)
     print("Profile Section just started!")

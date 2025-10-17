@@ -17,14 +17,8 @@ from pydantic import BaseModel
 # from connection import 
 
 #-- This is for the getting the connection
-def get_Connection():
-        return psycopg2.connect(
-            host=str(os.getenv("HOST")),
-            dbname=str(os.getenv("DBNAME")),
-            user=str(os.getenv("USER")),
-            password=os.getenv("PASSWORD"),
-            port=str(os.getenv("PORT"))
-        )
+
+from connection.connect_db import get_Connection
 conn = get_Connection()
 
 
@@ -37,6 +31,7 @@ class confirmers(BaseModel):
     username: str 
     mail: str 
     password_confirm: str
+    random_size: 20
 
 #--- This is the regex function for looping and check if the email ends with @gmail.com
 def emialchecker(email: str):
@@ -102,6 +97,7 @@ async def register():
     passwordcheck(inppassword)
 
     encryp_pass= bcrypt.generate_password_hash(password=confirmers.password_confirm).decode('utf-8')
+    random_id = os.urandom(confirmers.random_size)
 
     if confirmers.username == "" :
         return {"Sorry your username is null": 310}
@@ -115,11 +111,10 @@ async def register():
         mail = confirmers.mail
         cur.execute("""INSERT INTO x_db (id , username , email, dob , passwordacc)
                     VALUES (%s , %s , %s , %s , %s) """, 
-                    (1 , confirmers.username ,mail , inpdate , encryp_pass))
+                    (random_id , confirmers.username ,mail , inpdate , encryp_pass))
 
         print("Username:", confirmers.username)
         print("Mail: ", mail)
-        print("encryp_pass: ", encryp_pass)
         print("date: ", date)
         
         conn.commit()
@@ -141,7 +136,7 @@ async def register():
 
 #--- I kept this for so i can use python command to run it ---
 if __name__ == "__main__":
-    app.run(debug=True)
-    print(confirmers.username)
-    print(confirmers.email)
-    print(confirmers.password_confirm)
+    #--- To get the port from the env
+    port = os.getenv('PORT', 5000)
+    #--- TO run the code so i can debug 
+    app.run(debug=True , host="0.0.0.0" , port=port)

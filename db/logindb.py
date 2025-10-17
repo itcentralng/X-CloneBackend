@@ -26,14 +26,8 @@ app.config['SECRET_KEY'] = str(os.getenv("SECRET_KEY"))
 
 
 #-- This is for the getting the connection
-def get_Connection():
-        return psycopg2.connect(
-            host=str(os.getenv("HOST")),
-            dbname=str(os.getenv("DBNAME")),
-            user=str(os.getenv("USER")),
-            password=os.getenv("PASSWORD"),
-            port=str(os.getenv("PORT"))
-        )
+
+from connection.connect_db import get_Connection
 conn =  get_Connection()
     
 
@@ -159,6 +153,10 @@ async def logindb():
                             secure=True,
                             samesite='Lax')
         
+        conn.commit()
+        cur.close()
+        conn.close()
+        
         # return token
         
         password_match = bcrypt.check_password_hash(pw_hash=confirmers.confirm_hash , password=confirmers.password_confirm)
@@ -188,4 +186,7 @@ async def logindb():
 
 if __name__ == "__main__":
     print("Login Backend Started")
-    app.run(debug=True)
+    #--- To get the port from the env
+    port = os.getenv('PORT', 5000)
+    #--- TO run the code so i can debug 
+    app.run(debug=True , host="0.0.0.0" , port=port)

@@ -24,21 +24,14 @@ from tweet.tweets import Posting_tweet
 
 load_dotenv()
 
-#-- This is for the getting the connection
-def get_Connection():
-        return psycopg2.connect(
-            host=str(os.getenv("HOST")),
-            dbname=str(os.getenv("DBNAME")),
-            user=str(os.getenv("USER")),
-            password=os.getenv("PASSWORD"),
-            port=str(os.getenv("PORT"))
-        )
+from connection.connect_db import get_Connection
+
 conn = get_Connection()
 cur = conn.cursor()
 
 @app.route("/" , methods=["GET"])
 async def Welcome():
-    return{"Message: "+"Welcome to the X-CloneBackend"}
+    return{"Message ":"Welcome to the X-CloneBackend"}
 
 
 @app.route("/status" , methods=["GET"])
@@ -125,4 +118,5 @@ conn.close()
 # --- If run flask --app (py) run it won't be reloading if their are any changes in the code
 
 if __name__ == ("__main__"):
+    #--- TO run the code so i can debug 
     app.run(debug=True)
