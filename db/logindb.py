@@ -153,9 +153,6 @@ async def logindb():
                             secure=True,
                             samesite='Lax')
         
-        conn.commit()
-        cur.close()
-        conn.close()
         
         # return token
         
@@ -163,6 +160,9 @@ async def logindb():
 
         # print("Hashed Password: ", confirmers.confirm_hash)
         if result and password_match:
+            conn.commit()
+            cur.close()
+            conn.close()
             return {
                     'user':{
                     'username':result[0],
@@ -171,7 +171,7 @@ async def logindb():
                     'Welcome Back':200,
                     'token':token,
                    }
-        
+
         elif not result or not password_match:
             return {'Wrong User Infomation': 500}
         elif not result:

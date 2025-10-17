@@ -31,8 +31,9 @@ class confirmers(BaseModel):
     username: str 
     mail: str 
     password_confirm: str
-    random_size: 20
 
+
+random_size=20
 #--- This is the regex function for looping and check if the email ends with @gmail.com
 def emialchecker(email: str):
     check : bool
