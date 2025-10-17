@@ -34,9 +34,9 @@ async def Posting_tweet():
         return jsonify({"Post":f"{tweeting}"}), 200
 
     except psycopg2.IntegrityError as error:
-         return {"DB Error": error}
+         return jsonify({"error": f"Database integrity error: {str(error)}"}), 400
     except Exception as e:
-        return {f" Error from the tweet Backend !!{e}"}
+         return jsonify({"error": f"Error from the tweet Backend: {str(e)}"}), 500
 
 if __name__ == "__main__":
     #--- TO run the code so i can debug 
