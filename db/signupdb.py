@@ -33,9 +33,10 @@ class confirmers(BaseModel):
     password_confirm: str
 
 
-random_size=20
+RANDOM_SIZE: int=20
+
 #--- This is the regex function for looping and check if the email ends with @gmail.com
-def emialchecker(email: str):
+def emailchecker(email: str):
     check : bool
     if len(email) > 13:
         print("Email is more than 13 characters", email)
@@ -93,12 +94,12 @@ async def register():
     inpemail = data.get("email")
     inppassword = data.get("password")
 
-    emialchecker(inpemail)
+    emailchecker(inpemail)
     usernamechecker(inpusername)
     passwordcheck(inppassword)
 
     encryp_pass= bcrypt.generate_password_hash(password=confirmers.password_confirm).decode('utf-8')
-    random_id = os.urandom(confirmers.random_size)
+    random_id = os.urandom(RANDOM_SIZE)
 
     if confirmers.username == "" :
         return {"Sorry your username is null": 310}
@@ -129,9 +130,9 @@ async def register():
         if "duplicate key value violates unique constraint" in str(error):
             return {"User Email Exist Already": 500}
         else :
-            return (f"fatal error in database")
+            return jsonify({"error": f"Database integrity error: {str(error)}"}), 400
     except Exception as e:
-        return (f"fatal Error when inserting {e}")
+        return jsonify({"error": f"Error from the tweet Backend: {str(e)}"}), 500
 
   
 
