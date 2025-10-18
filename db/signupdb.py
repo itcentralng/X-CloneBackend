@@ -120,8 +120,6 @@ async def register():
         print("date: ", date)
         
         conn.commit()
-        cur.close()
-        conn.close()
         
 
         return jsonify({"status": "success", "username": confirmers.username, "email": confirmers.mail , "password": encryp_pass})
