@@ -176,14 +176,16 @@ async def logindb():
         else :
             return jsonify({"Error":"Error in backendcodebase"}), 500
 
-
     except Exception as e:
         # return (f"fatal Error when selecting {e}")
         print("error")
 
-    conn.commit()
-    cur.close()
-    conn.close()
+    finally:
+        try:
+            conn.commit()
+        except Exception as cleanup_error:
+            return jsonify({"Error": f"{cleanup_error}"}), 500
+
 
 if __name__ == "__main__":
     print("Login Backend Started")
