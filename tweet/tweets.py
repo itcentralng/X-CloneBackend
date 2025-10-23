@@ -4,6 +4,8 @@ import psycopg2
 import os
 from dotenv import load_dotenv
 
+import datetime
+
 app = Flask(__name__)
 
 load_dotenv()
@@ -23,13 +25,16 @@ async def Posting_tweet():
         username = data.get("username")
         tweeting = data.get("tweeting")
 
-        cur.execute("""INSERT INTO tweet_table (username , tweets) 
-                                VALUES(%s,%s)""", 
-                                (username,tweeting))
+        #-- To set the dateTime when post was made
+        posttime = datetime.datetime.now()
+
+        cur.execute("""INSERT INTO tweets (username , tweets , tweet_id , posttime) 
+                                VALUES(%s,%s,%s,%s)""", 
+                                (username,tweeting, 1 , posttime))
 
         conn.commit()
 
-        return jsonify({"Post":f"{tweeting}"}), 200
+        return jsonify({"Post":f"{tweeting}" , "time":f"{posttime}"}), 200
 
     except psycopg2.IntegrityError as error:
          return jsonify({"error": f"Database integrity error: {str(error)}"}), 400
@@ -38,9 +43,20 @@ async def Posting_tweet():
     
 
 
-@app.route("/tweet/list", methods=["POST"])
-async def tweet_list():
-    return jsonify({"Working": "Working on the tweet list endpoint"}), 200
+@app.route("/tweet_list/<username>", methods=["POST"])
+async def tweet_list(username):
+    try:
+        conn = get_Connection()
+        cur = conn.cursor()
+
+        cur.execute("""SELECT tweets FROM tweet_table WHERE username=%s""",
+                    (username,))
+        results =  cur.fetchall()
+        return jsonify({"Results": 
+                        results}), 200
+
+    except Exception as codeError:
+        return jsonify({"Error: ": f"{codeError}"}), 500
 
 if __name__ == "__main__":
     #--- TO run the code so i can debug 
