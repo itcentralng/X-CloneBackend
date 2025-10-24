@@ -49,8 +49,8 @@ async def tweet_list(username):
         conn = get_Connection()
         cur = conn.cursor()
 
-        cur.execute("""SELECT tweets FROM tweets WHERE username=%s""",
-                    (username,))
+        cur.execute("""SELECT tweets FROM tweet_table WHERE username=%s order by username limit %s """,
+                    (username, 5))
         results =  cur.fetchall()
         return jsonify({"Results": 
                         results}), 200
