@@ -49,11 +49,13 @@ async def tweet_list(username):
         conn = get_Connection()
         cur = conn.cursor()
 
-        cur.execute("""SELECT tweets FROM tweet_table WHERE username=%s order by username limit %s """,
-                    (username, 5))
+        data = request.get_json()
+        limits = data.get("limit")
+
+        cur.execute("""SELECT * FROM tweets  WHERE username=%s order by tweet_id limit %s """,
+                    (username,limits,))
         results =  cur.fetchall()
-        return jsonify({"Results": 
-                        results}), 200
+        return jsonify({"Results": results}), 200
 
     except Exception as codeError:
         return jsonify({"Error: ": f"{codeError}"}), 500
