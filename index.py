@@ -110,17 +110,18 @@ def list_tweet(tweet):
     liked_status = False
     cur.execute(f"SELECT * FROM tweets WHERE tweet_id = {tweet}")
     my_tweet = cur.fetchone()
-                                #(username,tweets,t_id,time)
+                            #(username,tweets,t_id,time)
     t_id = my_tweet[2]
     cur.execute(f"SELECT * FROM likes_table WHERE tweet_id = {tweet}")
     tweet_like = cur.fetchone()
-                                #(tweet_id,users_liked,id)
+                            #(tweet_id,users_liked,id)
     users_liked = tweet_like[1]
     if t_id in users_liked:
         liked_status = True
     like_count = len(users_liked)
     return jsonify({"Like Count":like_count},
-                    {"Like Status":liked_status}  
+                    {"Like Status":liked_status}
+                      
                    )
     
     
