@@ -153,9 +153,6 @@ async def logindb():
                             secure=True,
                             samesite='Lax')
         
-        conn.commit()
-        cur.close()
-        conn.close()
         
         # return token
         
@@ -171,18 +168,24 @@ async def logindb():
                     'Welcome Back':200,
                     'token':token,
                    }
-        
-        elif not result or not password_match:
-            return {'Wrong User Infomation': 500}
-        elif not result:
-            return {'User not found':500}
-        else :
-            return {'Error in backendcodebase': 404}
 
+        elif not result or not password_match:
+            return jsonify({"Error":"Wrong User Infomation"}),404
+        elif not result:
+            return jsonify({"Error":"User not found"}),500
+        else :
+            return jsonify({"Error":"Error in backendcodebase"}), 500
 
     except Exception as e:
         # return (f"fatal Error when selecting {e}")
         print("error")
+
+    finally:
+        try:
+            conn.commit()
+        except Exception as cleanup_error:
+            return jsonify({"Error": f"{cleanup_error}"}), 500
+
 
 if __name__ == "__main__":
     print("Login Backend Started")

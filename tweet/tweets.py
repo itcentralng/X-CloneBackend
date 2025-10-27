@@ -36,15 +36,19 @@ async def Posting_tweet():
                                 (username,tweeting))
 
         conn.commit()
-        cur.close()
-        conn.close()
 
         return jsonify({"Post":f"{tweeting}"}), 200
 
     except psycopg2.IntegrityError as error:
-         return {"DB Error": error}
+         return jsonify({"error": f"Database integrity error: {str(error)}"}), 400
     except Exception as e:
-        return {f" Error from the tweet Backend !!{e}"}
+         return jsonify({"error": f"Error from the tweet Backend: {str(e)}"}), 500
+    
+
+
+@app.route("/tweet/list", methods=["POST"])
+async def tweet_list():
+    return jsonify({"Working": "Working on the tweet list endpoint"}), 200
 
 if __name__ == "__main__":
     #--- TO run the code so i can debug 
