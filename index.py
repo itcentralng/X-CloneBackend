@@ -91,7 +91,7 @@ def me():
     STEP4: Format and return json response with details.
     STEP5: Handle errors
     '''
-    app.config['SECRET_KEY'] = str(os.getenv("SECRET_KEY"))
+    app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
     if not request.get.headers('Authorization'):
         return jsonify({'Unauthorized Request':404})
     else:
@@ -104,14 +104,28 @@ def me():
         
     return jsonify({'User_Info':user})
 
-#Week5 Attahir 
-@app.route('/tweet/list',methods=['GET'])
-def alltweet():
-    cur.execute("SELECT * FROM tweet_table")
-    all_tweets = cur.fetchall()
-
-    return jsonify({"All Tweets":all_tweets})
-
+#WEEK5 & 7 Attahir 
+@app.route('/<tweet>/list',methods=['GET'])
+def list_tweet(tweet):
+    liked_status = False
+    cur.execute(f"SELECT * FROM tweets WHERE tweet_id = {tweet}")
+    my_tweet = cur.fetchone()
+                                #(username,tweets,t_id,time)
+    t_id = my_tweet[2]
+    cur.execute(f"SELECT * FROM likes_table WHERE tweet_id = {tweet}")
+    tweet_like = cur.fetchone()
+                                #(tweet_id,users_liked,id)
+    users_liked = tweet_like[1]
+    if t_id in users_liked:
+        liked_status = True
+    like_count = len(users_liked)
+    return jsonify({"Like Count":like_count},
+                    {"Like Status":liked_status}  
+                   )
+    
+    
+    
+    
 cur.close()
 conn.close()
 # --- I put this back so i can run it with python so i can be reloading
