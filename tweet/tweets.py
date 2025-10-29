@@ -43,7 +43,7 @@ async def Posting_tweet():
     
 
 
-@app.route("/tweet_list/<username>", methods=["POST"])
+@app.route("/tweet_list/<username>", methods=["GET"])
 async def tweet_list(username):
     try:
         conn = get_Connection()
