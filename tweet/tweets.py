@@ -65,13 +65,60 @@ async def tweet_list(username):
         return jsonify({"Error: ": f"{codeError}"}), 500
 
 
-@app.route("/tweet/like" , methods=["PATCH"])
+@app.route("/tweet/like" , methods=["POST"])
 async def like():
-    return jsonify({"Like":"This is the like table"}), 200
+    data = request.get_json()
+    user_id = data.get('user_id')
+    item_id = data.get('item_id')
 
-@app.route("tweet/unlike", methods=["PATCH"])
-async def unlike():
-    return jsonify({"Unlike":"This is the unlike table"}), 200
+    if not user_id or not item_id:
+        return jsonify({'error': 'Missing user_id or item_id'}), 400
+
+    try:
+        conn = get_Connection()
+        cur = conn.cursor()
+
+        # Insert or update like record
+        cur.execute("""
+            INSERT INTO like_table (user_id, item_id)
+            VALUES (%s, %s)
+            ON CONFLICT (user_id, item_id) DO NOTHING;
+        """, (user_id, item_id))
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return jsonify({'message': 'Item liked successfully'}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route("/tweet/dislike", methods=["POST"])
+async def dislike():
+
+    conn =get_Connection()
+
+    data = request.get_json()
+    tweet_id = data.get('tweet_id')
+    username = data.get('username')
+
+    if not tweet_id or not username:
+        return jsonify({'error': 'Missing post_id or user_id'}), 400
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO dislike_table (post_id, user_id, vote_type)
+                VALUES (%s, %s, 'dislike')
+            """, (tweet_id, username))
+            conn.commit()
+        return jsonify({'message': 'Dislike recorded'}), 201
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+
 
 if __name__ == "__main__":
     #--- TO run the code so i can debug 
