@@ -20,7 +20,7 @@ from db.logindb import logindb , token_required
 from users.users_profile import profile_fetch
 
 #--- This is to run the tweets endpoint in index
-from tweet.tweets import Posting_tweet
+from tweet.tweets import Posting_tweet, tweet_list
 
 load_dotenv()
 
@@ -65,12 +65,15 @@ async def profile(username: str):
 
 
 @app.route("/tweet/create" , methods=["POST"])
-# @token_required
+@token_required
 async def Post_tweet():
     result = await Posting_tweet()
     return result
 
-
+@app.route("/tweet_list/<username>" , methods=["GET"])
+async def Get_tweet(username: str):
+    result = await tweet_list(username=username)
+    return result
 
 #Week 2 Task Attahir
 @app.route("/users",methods=["GET"])
