@@ -69,9 +69,9 @@ async def tweet_list(username):
 async def like():
     data = request.get_json()
     user_id = data.get('user_id')
-    item_id = data.get('item_id')
+    tweet_id = data.get('tweet_id')
 
-    if not user_id or not item_id:
+    if not user_id or not tweet_id:
         return jsonify({'error': 'Missing user_id or item_id'}), 400
 
     try:
@@ -80,44 +80,51 @@ async def like():
 
         # Insert or update like record
         cur.execute("""
-            INSERT INTO like_table (user_id, item_id)
+            INSERT INTO like_table (user_id, tweet_id)
             VALUES (%s, %s)
-            ON CONFLICT (user_id, item_id) DO NOTHING;
-        """, (user_id, item_id))
+            ON CONFLICT (user_id, tweet_id) DO NOTHING;
+        """, (user_id, tweet_id))
         conn.commit()
-        cur.close()
-        conn.close()
 
+        
         return jsonify({'message': 'Item liked successfully'}), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    finally:
+        cur.close()
+        conn.close()
 
 
 @app.route("/tweet/dislike", methods=["POST"])
-async def dislike():
-
-    conn =get_Connection()
+async def dislike(): 
 
     data = request.get_json()
     tweet_id = data.get('tweet_id')
-    username = data.get('username')
+    user_id = data.get('user_id')
 
-    if not tweet_id or not username:
+    if not tweet_id or not user_id:
         return jsonify({'error': 'Missing post_id or user_id'}), 400
 
     try:
-        with conn.cursor() as cur:
-            cur.execute("""
-                INSERT INTO dislike_table (post_id, user_id, vote_type)
-                VALUES (%s, %s, 'dislike')
-            """, (tweet_id, username))
-            conn.commit()
-        return jsonify({'message': 'Dislike recorded'}), 201
+        conn = get_Connection()
+        cur = conn.cursor()
+        cur.execute("""INSERT INTO dislike_table (id, tweet_id)
+                    VALUES (%s, %s, 'dislike') """, (user_id, tweet_id))
+        conn.commit()
+
+        if 'conn' in locals() and conn:
+            conn.rollback()
+
+        return jsonify({'message': 'Dislike recorded'}), 200
+    
 
     except Exception as e:
-        conn.rollback()
+        pass
         return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
+        cur.close()
 
 
 if __name__ == "__main__":
