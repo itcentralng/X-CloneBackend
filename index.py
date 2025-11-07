@@ -126,10 +126,11 @@ def list_tweet(tweet):
                     {"Like Status":liked_status}
                       
                    )
-    
-    
-    
-    
+
+@app.route('/following/<id>')
+def following_id(id):
+    pass
+   
 cur.close()
 conn.close()
 # --- I put this back so i can run it with python so i can be reloading
