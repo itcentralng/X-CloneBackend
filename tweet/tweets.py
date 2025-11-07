@@ -51,7 +51,7 @@ async def Posting_tweet():
     
 
 
-@app.route("/tweet_list/<username>", methods=["POST"])
+@app.route("/tweet_list/<username>", methods=["GET"])
 async def tweet_list(username):
     try:
         conn = get_Connection()
@@ -73,13 +73,67 @@ async def tweet_list(username):
         return jsonify({"Error: ": f"{codeError}"}), 500
 
 
-@app.route("/tweet/like" , methods=["PATCH"])
+@app.route("/tweet/like" , methods=["POST"])
 async def like():
-    return jsonify({"Like":"This is the like table"}), 200
+    data = request.get_json()
+    user_id = data.get('user_id')
+    tweet_id = data.get('tweet_id')
 
-@app.route("tweet/unlike", methods=["PATCH"])
-async def unlike():
-    return jsonify({"Unlike":"This is the unlike table"}), 200
+    if not user_id or not tweet_id:
+        return jsonify({'error': 'Missing user_id or item_id'}), 400
+
+    try:
+        conn = get_Connection()
+        cur = conn.cursor()
+
+        # Insert or update like record
+        cur.execute("""
+            INSERT INTO like_table (user_id, tweet_id)
+            VALUES (%s, %s)
+            ON CONFLICT (user_id, tweet_id) DO NOTHING;
+        """, (user_id, tweet_id))
+        conn.commit()
+
+        
+        return jsonify({'message': 'Item liked successfully'}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cur.close()
+        conn.close()
+
+
+@app.route("/tweet/dislike", methods=["POST"])
+async def dislike(): 
+
+    data = request.get_json()
+    tweet_id = data.get('tweet_id')
+    user_id = data.get('user_id')
+
+    if not tweet_id or not user_id:
+        return jsonify({'error': 'Missing post_id or user_id'}), 400
+
+    try:
+        conn = get_Connection()
+        cur = conn.cursor()
+        cur.execute("""INSERT INTO dislike_table (id, tweet_id)
+                    VALUES (%s, %s, 'dislike') """, (user_id, tweet_id))
+        conn.commit()
+
+        if 'conn' in locals() and conn:
+            conn.rollback()
+
+        return jsonify({'message': 'Dislike recorded'}), 200
+    
+
+    except Exception as e:
+        pass
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
+        cur.close()
+
 
 if __name__ == "__main__":
     #--- TO run the code so i can debug 
