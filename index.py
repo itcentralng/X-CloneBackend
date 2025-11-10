@@ -139,6 +139,8 @@ def followers_id(id):
     user = cur.fetchone()
     followers = user[0]
     return jsonify({"no_of_followers":followers})
+
+
 cur.close()
 conn.close()
 # --- I put this back so i can run it with python so i can be reloading
