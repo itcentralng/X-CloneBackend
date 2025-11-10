@@ -102,7 +102,7 @@ def me():
         jwt_token = auth_header.split()[1]
         payload = jwt.decode(jwt_token,app.config['SECRET_KEY'],algorithms=['HS256'])
         email = payload['email']
-        cur.execute(f"SELECT * FROM x_db WHERE email = {email}")
+        cur.execute("SELECT * FROM x_db WHERE email = %s"(email,))
         user = cur.fetchone()
         
     return jsonify({'User_Info':user})
@@ -111,11 +111,11 @@ def me():
 @app.route('/<tweet>/list',methods=['GET'])
 def list_tweet(tweet):
     liked_status = False
-    cur.execute(f"SELECT * FROM tweets WHERE tweet_id = {tweet}")
+    cur.execute("SELECT * FROM tweets WHERE tweet_id = %s"(tweet,))
     my_tweet = cur.fetchone()
                             #(username,tweets,t_id,time)
     t_id = my_tweet[2]
-    cur.execute(f"SELECT * FROM likes_table WHERE tweet_id = {tweet}")
+    cur.execute("SELECT * FROM likes_table WHERE tweet_id = %s"(tweet,))
     tweet_like = cur.fetchone()
                             #(tweet_id,users_liked,id)
     users_liked = tweet_like[1]
@@ -129,8 +129,16 @@ def list_tweet(tweet):
 
 @app.route('/following/<id>')
 def following_id(id):
-    pass
-   
+    cur.execute("SELECT COUNT(following_id) FROM follow_table WHERE users_id = %s"(id,))
+    user = cur.fetchone()
+    following = user[0]
+    return jsonify({"no_of_following":following})
+@app.route('/followers/<id>')
+def followers_id(id):
+    cur.execute("SELECT COUNT(follwers_id) FROM follow_table WHERE users_id = %s"(id,))
+    user = cur.fetchone()
+    followers = user[0]
+    return jsonify({"no_of_followers":followers})
 cur.close()
 conn.close()
 # --- I put this back so i can run it with python so i can be reloading
