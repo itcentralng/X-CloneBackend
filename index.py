@@ -139,8 +139,12 @@ def followers_id(id):
     user = cur.fetchone()
     followers = user[0]
     return jsonify({"no_of_followers":followers})
-
-
+@app.route('/image/<id>')
+def get_image(id):
+    cur.execute("GET IMAGE STRING")
+    image = cur.fetchone()
+    image_url = image[0]
+    return jsonify({"image_url":image_url})
 cur.close()
 conn.close()
 # --- I put this back so i can run it with python so i can be reloading
