@@ -1,12 +1,14 @@
-from flask import Flask , jsonify , request
+from flask import Flask , jsonify , request 
 import datetime as date
 from datetime import datetime
 import jwt
 import psycopg2
 import os
 from dotenv import load_dotenv
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app=app , supports_credentials=True)
 # from db.connection.connect_db import get_Connection
 
 startTime: date = date.datetime.now()
@@ -58,11 +60,12 @@ async def login():
 #--- This is for the profile route
 @app.route("/profile/<username>" , methods=["GET", "PATCH"])
 @token_required
-async def profile(username: str):
+def profile(username: str):
     if request.method == "GET":
-        return await profile_fetch(username=username)
+        return profile_fetch(username=username)
     elif request.method == "PATCH":
         return ("You will soon patch don't worry")
+
 
 
 @app.route("/tweet/create" , methods=["POST"])
@@ -72,12 +75,15 @@ async def Post_tweet():
     return result
 
 @app.route("/tweet_list/<username>" , methods=["GET"])
+@token_required
 async def Get_tweet(username: str):
     result = await tweet_list(username=username)
     return result
 
 #Week 2 Task Attahir
 @app.route("/users",methods=["GET"])
+
+
 def user():
     try:
 

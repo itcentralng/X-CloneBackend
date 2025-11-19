@@ -13,7 +13,7 @@ from connection.connect_db import get_Connection
 conn =  get_Connection()
 
 @app.route("/profile/<username>", methods=["GET", "PATCH"])
-async def profile_fetch(username):
+def profile_fetch(username):
 
     cur = conn.cursor()
 
@@ -21,11 +21,16 @@ async def profile_fetch(username):
 
         #----- THIS IS TO GET THE USERS THAT EXIST
         if request.method == "GET":
-            cur.execute("SELECT * FROM testsignupii WHERE username=%s",
+            cur.execute("SELECT * FROM x_db WHERE username=%s",
                         (username,))
-            result = cur.fetchall()
+            result = cur.fetchone()
             if result:
-                return jsonify(result , 200)
+                return {'data':{
+                    "id":result[0],
+                    "username":result[1],
+                    "email":result[2],
+                    "dob":result[3]
+                }}, 200
                 # return result
             elif not result:
                 return {"USER DOES NOT EXIST !": 404}
