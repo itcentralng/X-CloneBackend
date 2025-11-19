@@ -1,12 +1,14 @@
-from flask import Flask , jsonify , request
+from flask import Flask , jsonify , request 
 import datetime as date
 from datetime import datetime
 import jwt
 import psycopg2
 import os
 from dotenv import load_dotenv
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app=app , supports_credentials=True)
 # from db.connection.connect_db import get_Connection
 
 startTime: date = date.datetime.now()
@@ -65,6 +67,7 @@ async def profile(username: str):
         return ("You will soon patch don't worry")
 
 
+
 @app.route("/tweet/create" , methods=["POST"])
 @token_required
 async def Post_tweet():
@@ -72,12 +75,15 @@ async def Post_tweet():
     return result
 
 @app.route("/tweet_list/<username>" , methods=["GET"])
+@token_required
 async def Get_tweet(username: str):
     result = await tweet_list(username=username)
     return result
 
 #Week 2 Task Attahir
 @app.route("/users",methods=["GET"])
+
+
 def user():
     try:
 

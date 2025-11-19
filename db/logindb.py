@@ -145,15 +145,17 @@ async def logindb():
                             },
                             app.config['SECRET_KEY'], 
                             algorithm="HS256")
+        if isinstance(token, bytes):
+            token = token.decode('utf-8')
         
-        response = make_response(jsonify({'message': 'Login successful'}, 200))
+        response = make_response(jsonify({'message': 'Login successful'}), 200)
         response.set_cookie('jwt_token', token, 
                             httponly=True, 
                             max_age=2700,
                             secure=True,
                             samesite='Lax')
         
-        
+
         # return token
         
         password_match = bcrypt.check_password_hash(pw_hash=confirmers.confirm_hash , password=confirmers.password_confirm)
@@ -177,8 +179,8 @@ async def logindb():
             return jsonify({"Error":"Error in backendcodebase"}), 500
 
     except Exception as e:
-        # return (f"fatal Error when selecting {e}")
-        print("error")
+        return (f"fatal Error when selecting {e}")
+        # print("error")
 
     finally:
         try:
