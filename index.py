@@ -44,7 +44,6 @@ async def status():
         "uptime": str(date.datetime.now() - startTime),
         "timestamp": str(date.datetime.now())
     }
-
     return jsonify(status)
 
 @app.route("/register" , methods=["POST"])
@@ -86,28 +85,22 @@ async def Get_tweet(username: str):
 
 def user():
     try:
-
         cur.execute("""SELECT * FROM x_db""")
         users = cur.fetchall()
         return jsonify({"users": users})
-        
     except psycopg2.Error as e:
         return {"error": str(e)}
 #Attahir Week 4
-
 @app.route('/users/me',methods=["GET"])
 def me():
-
     '''
-    
     STEP1: Extract and validate JWT Token from auth header
     STEP2: Get user_email from token_payload
     STEP3: Query DB for user_email
     STEP4: Format and return json response with details.
     STEP5: Handle errors
-    
     '''
-    app.config['SECRET_KEY'] = 'v0gXEKYBouAqIUbw'
+    app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
     if not request.get.headers('Authorization'):
         return jsonify({'Unauthorized Request':404})
     else:
@@ -115,25 +108,51 @@ def me():
         jwt_token = auth_header.split()[1]
         payload = jwt.decode(jwt_token,app.config['SECRET_KEY'],algorithms=['HS256'])
         email = payload['email']
-        cur.execute(f"SELECT * FROM xsignup WHERE email = {email}")
-        user = cur.fetchall()
-    
+        cur.execute("SELECT * FROM x_db WHERE email = %s"(email,))
+        user = cur.fetchone()
+        
     return jsonify({'User_Info':user})
 
-#Week5 Attahir 
-@app.route('/tweet/list',methods=['GET'])
-def alltweet():
-    cur.execute("SELECT * FROM tweetlist")
-    all_tweets = cur.fetchall()
+#WEEK5 & 7 Attahir 
+@app.route('/<tweet>/list',methods=['GET'])
+def list_tweet(tweet):
+    liked_status = False
+    cur.execute("SELECT * FROM tweets WHERE tweet_id = %s"(tweet,))
+    my_tweet = cur.fetchone()
+                            #(username,tweets,t_id,time)
+    t_id = my_tweet[2]
+    cur.execute("SELECT * FROM likes_table WHERE tweet_id = %s"(tweet,))
+    tweet_like = cur.fetchone()
+                            #(tweet_id,users_liked,id)
+    users_liked = tweet_like[1]
+    if t_id in users_liked:
+        liked_status = True
+    like_count = len(users_liked)
+    return jsonify({"Like Count":like_count},
+                    {"Like Status":liked_status}
+                      
+                   )
 
-    return jsonify({"All Tweets":all_tweets})
-
-
-
+@app.route('/following/<id>')
+def following_id(id):
+    cur.execute("SELECT COUNT(following_id) FROM follow_table WHERE users_id = %s"(id,))
+    user = cur.fetchone()
+    following = user[0]
+    return jsonify({"no_of_following":following})
+@app.route('/followers/<id>')
+def followers_id(id):
+    cur.execute("SELECT COUNT(follwers_id) FROM follow_table WHERE users_id = %s"(id,))
+    user = cur.fetchone()
+    followers = user[0]
+    return jsonify({"no_of_followers":followers})
+@app.route('/image/<id>')
+def get_image(id):
+    cur.execute("GET IMAGE STRING")
+    image = cur.fetchone()
+    image_url = image[0]
+    return jsonify({"image_url":image_url})
 cur.close()
-conn.close()  
-
-
+conn.close()
 # --- I put this back so i can run it with python so i can be reloading
 # --- If run flask --app (py) run it won't be reloading if their are any changes in the code
 
