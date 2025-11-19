@@ -77,18 +77,19 @@ def passwordcheck(password_check: str):
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = request.cookies.get('jwt_token')
+        auth = request.headers.get('Authorization')
+        token = auth.split("Bearer ")[-1]
 
         if not token:
             return jsonify({'message': 'Token is missing!'}), 401
 
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
-            current_user_mail = confirmers.mail
-
+            email = data.get('email')
+        
             curr = conn.cursor()
             curr.execute("""SELECT * FROM x_db WHERE email=%s""" , 
-                         (confirmers.mail))
+                         (email,))
             user_row = curr.fetchone()
             
             #--- This is to get the payload and give it to jwt
@@ -99,16 +100,17 @@ def token_required(f):
 
             if not user_info:
                 return jsonify({'message': 'Token payload is missing user detials!'}), 401
+            from flask import g
+            g.user_info = user_info
 
 
         except jwt.ExpiredSignatureError:
             return jsonify({'message': 'User Token Expired'}), 401
         except jwt.InvalidTokenError:
             return jsonify({'messgae': 'Token is missing'}) , 401
-        except:
-            return jsonify({'message': 'Token is invalid!'}), 401
-
-        return f(user_info, *args, **kwargs)
+        except Exception as e:
+            return jsonify({'message': 'Token is invalid!', 'e':str(e)}), 401
+        return f(*args, **kwargs)
 
     return decorated
 
