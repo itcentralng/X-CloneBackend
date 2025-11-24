@@ -12,7 +12,6 @@ load_dotenv()
 
 #-- This is for the getting the connection
 # from connection.connect_db import get_Connection
-#from connection.connect_db import get_Connection
 def get_Connection():
         return psycopg2.connect(
             host=os.getenv("DBHOST"),
