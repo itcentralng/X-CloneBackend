@@ -14,7 +14,7 @@ FROM_EMAIL_ADDRESS = "Sender Name xcloneitcentral@gmail.com"
 
 app = Flask()
 
-@app.route("/reset-password/request", methods=[""])
+@app.route("/reset-password/request", methods=["POST"])
 async def PasswordRequest():
     try:
         api_key = os.getenv("MAILGUN_API_KEY")  
@@ -33,7 +33,7 @@ async def PasswordRequest():
     except Exception as ex:
         logging.exception(f"Mailgun error: {ex}")
 
-@app.route("/reset-password/confirm", methods=[""])
+@app.route("/reset-password/confirm", methods=["POST"])
 async def PasswordConfirm():
     try:
         api_key = os.getenv("MAILGUN_API_KEY")  
