@@ -25,7 +25,7 @@ async def notification():
 
         if result_notify:
             return jsonify({"message":"Notification added"}), 200
-        else :
+        else:
             return jsonify({"message":"error from the adding"}), 404
         
 
@@ -34,3 +34,4 @@ async def notification():
     finally:
         cur.close()
         conn.close()
+        

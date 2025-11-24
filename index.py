@@ -151,6 +151,11 @@ def get_image(id):
     image = cur.fetchone()
     image_url = image[0]
     return jsonify({"image_url":image_url})
+@app.route('/notification/read')
+def not_read():
+    cur.execute("SELECT from notification values WHERE read = 1")
+    data = cur.fetchall()
+    return jsonify({"notifications_read":dict(data)})
 cur.close()
 conn.close()
 # --- I put this back so i can run it with python so i can be reloading
