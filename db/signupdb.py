@@ -30,7 +30,7 @@ bcrypt = Bcrypt(app=app)
 class confirmers(BaseModel):
     username: str 
     mail: str 
-    password_confirm: str
+    password_confirm: str = "dodo"
 
 
 RANDOM_SIZE: int=20
@@ -98,15 +98,15 @@ async def register():
     usernamechecker(inpusername)
     passwordcheck(inppassword)
 
-    encryp_pass= bcrypt.generate_password_hash(password=confirmers.password_confirm).decode('utf-8')
+    encryp_pass= bcrypt.generate_password_hash(password=inppassword).decode("utf-8")
     random_id = os.urandom(RANDOM_SIZE)
 
     if confirmers.username == "" :
         return {"Sorry your username is null": 310}
     elif confirmers.mail == "":
         return {"Sorry your Email is null": 311}
-    elif confirmers.password_confirm == "":
-        return {"Sorry your Password is null": 312}
+    # elif confirmers.password_confirm == "":
+    #     return {"Sorry your Password is null": 312}
     
     try:
         
