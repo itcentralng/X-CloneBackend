@@ -2,7 +2,7 @@ from flask import Flask , jsonify , request
 
 from connection.connect_db import get_Connection
 
-app = Flask()
+app = Flask(__name__)
 
 @app.route("/follow/<users_id>" , methods=["POST"])
 async def following(user_id):
@@ -31,7 +31,7 @@ async def following(user_id):
         conn.close()
         cur.close()
 
-@app.route("/unfollow/<users_id>")
+@app.route("/unfollow/<users_id>", methods=["POST"])
 async def Unfollow(users_id):
     try:
         data = request.get_json()

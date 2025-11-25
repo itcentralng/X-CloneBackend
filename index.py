@@ -22,7 +22,12 @@ from db.logindb import logindb , token_required
 from users.users_profile import profile_fetch
 
 #--- This is to run the tweets endpoint in index
-from tweet.tweets import Posting_tweet, tweet_list
+from tweet.tweets import Posting_tweet, tweet_list, like, dislike
+
+#--- This is for the notification of x and follow
+from follow.follow import following, Unfollow
+from follow.notification import notification
+
 
 load_dotenv()
 
@@ -79,8 +84,39 @@ async def Get_tweet(username: str):
     result = await tweet_list(username=username)
     return result
 
+@app.route("/tweet/like" , methods=["POST"])
+@token_required
+async def likes():
+    result = await like()
+    return result
+
+@app.route("/tweet/dislike" , methods=["POST"])
+@token_required
+async def dislikes():
+    result = await dislike()
+    return result
+
+@app.route("/follow/<users_id>", methods=["POST"])
+@token_required
+async def follow():
+    result = await following()
+    return result
+
+@app.route("/unfollow/<users_id>", methods=["POST"])
+@token_required
+async def unfollowing():
+    result = await Unfollow()
+    return result
+
+@app.route("/notification" , methods=["POST"])
+@token_required
+async def x_notification():
+    result = await notification()
+    return result
+
 #Week 2 Task Attahir
 @app.route("/users",methods=["GET"])
+@token_required
 def user():
     try:
         cur.execute("""SELECT * FROM x_db""")
@@ -90,6 +126,7 @@ def user():
         return {"error": str(e)}
 #Attahir Week 4
 @app.route('/users/me',methods=["GET"])
+@token_required
 def me():
     app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
     if not request.get.headers('Authorization'):
