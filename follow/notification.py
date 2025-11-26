@@ -5,7 +5,7 @@ app = Flask(__name__)
 from connection.connect_db import get_Connection
 
 @app.route("/notification", methods=["GET"])
-async def notification():
+def notification():
     try:
         conn = get_Connection()
         cur = conn.cursor()
@@ -28,7 +28,6 @@ async def notification():
         else :
             return jsonify({"message":"error from the adding"}), 404
         
-
     except Exception as error:
         return jsonify({"erro":f"Internal Error: {error}"}) , 500
     finally:

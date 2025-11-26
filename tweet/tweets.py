@@ -66,7 +66,7 @@ async def tweet_list(username):
 
 
 @app.route("/tweet/like" , methods=["POST"])
-async def like():
+def like():
     data = request.get_json()
     user_id = data.get('user_id')
     tweet_id = data.get('tweet_id')
@@ -97,7 +97,7 @@ async def like():
 
 
 @app.route("/tweet/dislike", methods=["POST"])
-async def dislike(): 
+def dislike(): 
 
     data = request.get_json()
     tweet_id = data.get('tweet_id')
@@ -109,7 +109,7 @@ async def dislike():
     try:
         conn = get_Connection()
         cur = conn.cursor()
-        cur.execute("""DELETE FROM dislike_table where id =%s AND tweet_id =%s """, (user_id, tweet_id))
+        cur.execute("""DELETE FROM like_table where user_id =%s AND tweet_id =%s """, (user_id, tweet_id))
         conn.commit()
 
         if 'conn' in locals() and conn:

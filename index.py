@@ -87,32 +87,32 @@ async def Get_tweet(username: str):
 
 @app.route("/tweet/like" , methods=["POST"])
 @token_required
-async def likes():
-    result = await like()
+def likes():
+    result = like()
     return result
 
 @app.route("/tweet/dislike" , methods=["POST"])
 @token_required
-async def dislikes():
-    result = await dislike()
-    return result
+def dislikes():
+    result = dislike()
+    return result   
 
-@app.route("/follow/<users_id>", methods=["POST"])
+@app.route("/follow", methods=["POST"])
 @token_required
-async def follow():
-    result = await following()
+def follow():
+    result = following()
     return result
 
 @app.route("/unfollow/<users_id>", methods=["POST"])
 @token_required
-async def unfollowing():
-    result = await Unfollow()
+def unfollowing():
+    result = Unfollow()
     return result
 
 @app.route("/notification" , methods=["POST"])
 @token_required
-async def x_notification():
-    result = await notification()
+def x_notification():
+    result = notification()
     return result
 
 #Week 2 Task Attahir
