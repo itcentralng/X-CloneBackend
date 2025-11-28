@@ -12,8 +12,15 @@ load_dotenv()
 
 #-- This is for the getting the connection
 # from connection.connect_db import get_Connection
-from connection.connect_db import get_Connection
-
+def get_Connection():
+        return psycopg2.connect(
+            host=os.getenv("DBHOST"),
+            dbname=os.getenv("DBNAME"),
+            user=os.getenv("DBUSER"),
+            password=os.getenv("DBPASSWORD"),
+            port=os.getenv("DBPORT"),
+            sslmode="require"
+        )
 
 @app.route("/tweet/create" , methods=["POST"])
 async def Posting_tweet():
