@@ -75,8 +75,8 @@ def profile(username: str):
 
 @app.route("/tweet/create" , methods=["POST"])
 @token_required
-async def Post_tweet():
-    result = await Posting_tweet()
+def Post_tweet():
+    result = Posting_tweet()
     return result
 
 @app.route("/tweet_list/<username>" , methods=["GET"])
@@ -103,7 +103,7 @@ def follow():
     result = following()
     return result
 
-@app.route("/unfollow/<users_id>", methods=["POST"])
+@app.route("/unfollow", methods=["POST"])
 @token_required
 def unfollowing():
     result = Unfollow()

@@ -1,4 +1,4 @@
-from flask import Flask , jsonify , request
+from flask import Flask, g , jsonify , request
 
 from connection.connect_db import get_Connection
 from psycopg2.errors import UniqueViolation
@@ -12,7 +12,7 @@ def following():
     cur = conn.cursor()
     try:
         data = request.get_json() or {}
-        user_id = data.get("user_id")
+        user_id = g.user_info['id']
         follower_id = data.get("follower_id")
 
         if not follower_id:
@@ -43,37 +43,46 @@ def following():
             "detail": errormessage  # convert exception to string
         }), 400
     except Exception as error:
-        return jsonify({"Error": error}), 500
+        return jsonify({"Error": str(error)}), 500
 
     finally:
-        if cur:
-            conn.close()
-        if conn:
-            cur.close()
+        conn.close()
+        cur.close()
 
-@app.route("/unfollow/<users_id>", methods=["POST"])
-def Unfollow(users_id):
+@app.route("/unfollow", methods=["POST"])
+def Unfollow():
     try:
-        data = request.get_json()
+        data = request.get_json() or {}
+        user_id = g.user_info['id']
         followe_id = data.get("followe_id")
+
+        print('attr:', user_id  , followe_id)
 
         conn = get_Connection()
         cur = conn.cursor()
-        
-        results = cur.execute("DELETE FROM followTable WHERE follower_id = %s AND followe_id = %s",
-                (users_id, followe_id)
-            )
+
+        # return jsonify({"Unfollowed": "Sucessfull" }), 200
+        executed = cur.execute("DELETE FROM followtable WHERE user_id = %s AND followe = %s" ,
+                (str(user_id), str(followe_id)))
+        print(f"Row deleted: {cur.rowcount}")
 
         conn.commit()
+        # if executed:
+        #     return {"message": "Unfollow sucessfull"}, 200
+        # elif not executed:
+        #     return {"meesage":"Unfollow Unsuccessfull"}, 404
 
-        if results:
-            return jsonify({"Unfollowed": "Sucessfull" }), 200
-        elif not results:
-            return jsonify({"Error"}), 404
-
+        return {"message": "Unfollow sucessfull"}, 200
+    except UniqueViolation as e:
+        errormessage: str = str(e)
         
+        
+        return jsonify({
+            "error": "UniqueViolation",
+            "detail": errormessage  # convert exception to string
+        }), 400
     except Exception as error:
-        return jsonify({"Error": error}) , 500
+        return jsonify({"Error": str(error)}) , 500
     finally:
         conn.close()
         cur.close()

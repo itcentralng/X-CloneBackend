@@ -96,6 +96,7 @@ def token_required(f):
             user_info={
                 'username':user_row[1],
                 'email':user_row[2],
+                'id':user_row[0],
             }
 
             if not user_info:
