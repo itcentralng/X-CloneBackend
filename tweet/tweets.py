@@ -1,8 +1,9 @@
-from flask import Flask , request , jsonify
+from flask import Flask, g , request , jsonify
 # from connection.connect_db import get_Connection
 import psycopg2
 import os
 from dotenv import load_dotenv
+import uuid
 
 import datetime
 
@@ -23,30 +24,33 @@ def get_Connection():
         )
 
 @app.route("/tweet/create" , methods=["POST"])
-async def Posting_tweet():
+def Posting_tweet():
     try:
         conn = get_Connection()
 
         cur = conn.cursor()
         data = request.get_json(force=True, cache=True)
-        username = data.get("username")
+        # username = data.get("username")
+        tweet_id = uuid.uuid4()
         tweeting = data.get("tweeting")
 
         #-- To set the dateTime when post was made
         posttime = datetime.datetime.now()
 
-        cur.execute("""INSERT INTO tweets (username , tweets , posttime) 
-                                VALUES(%s,%s,%s)""", 
-                                (username,tweeting, posttime))
+        cur.execute("""INSERT INTO tweets VALUES(%s,%s,%s)""", 
+                                (str(tweet_id),tweeting, posttime))
 
         conn.commit()
 
-        return jsonify({"Post":f"{tweeting}" , "time":f"{posttime}"}), 200
+        return jsonify({"Post":f"{tweeting}" , "time":f"{str(posttime)}"}), 200
 
     except psycopg2.IntegrityError as error:
-         return jsonify({"error": f"Database integrity error: {str(error)}"}), 400
+         return jsonify({"error": str(error)}), 400
     except Exception as e:
          return jsonify({"error": f"Error from the tweet Backend: {str(e)}"}), 500
+    finally:
+        cur.close()
+        conn.close() 
     
 
 
@@ -70,12 +74,15 @@ async def tweet_list(username):
 
     except Exception as codeError:
         return jsonify({"Error: ": f"{codeError}"}), 500
+    finally:
+        cur.close()
+        conn.close() 
 
 
 @app.route("/tweet/like" , methods=["POST"])
-async def like():
+def like():
     data = request.get_json()
-    user_id = data.get('user_id')
+    user_id = g.user_info['id']
     tweet_id = data.get('tweet_id')
 
     if not user_id or not tweet_id:
@@ -90,7 +97,7 @@ async def like():
             INSERT INTO like_table (user_id, tweet_id)
             VALUES (%s, %s)
             ON CONFLICT (user_id, tweet_id) DO NOTHING;
-        """, (user_id, tweet_id))
+        """, (str(user_id), tweet_id))
         conn.commit()
 
         
@@ -104,11 +111,11 @@ async def like():
 
 
 @app.route("/tweet/dislike", methods=["POST"])
-async def dislike(): 
+def dislike(): 
 
     data = request.get_json()
     tweet_id = data.get('tweet_id')
-    user_id = data.get('user_id')
+    user_id = g.user_info['id']
 
     if not tweet_id or not user_id:
         return jsonify({'error': 'Missing post_id or user_id'}), 400
@@ -116,7 +123,7 @@ async def dislike():
     try:
         conn = get_Connection()
         cur = conn.cursor()
-        cur.execute("""DELETE FROM dislike_table where id =%s AND tweet_id =%s """, (user_id, tweet_id))
+        cur.execute("""DELETE FROM like_table where user_id =%s AND tweet_id =%s """, (str(user_id), tweet_id))
         conn.commit()
 
         if 'conn' in locals() and conn:

@@ -18,6 +18,8 @@ from pydantic import BaseModel
 #-- This is for the getting the connection
 
 from connection.connect_db import get_Connection
+
+import uuid
 conn = get_Connection()
 
 
@@ -98,7 +100,8 @@ async def register():
     passwordcheck(inppassword)
 
     encryp_pass= bcrypt.generate_password_hash(password=inppassword).decode("utf-8")
-    random_id = os.urandom(RANDOM_SIZE)
+    random_id = str(uuid.uuid4())
+    print("This is the random id", random_id)
 
     if confirmers.username == "" :
         return {"Sorry your username is null": 310}
