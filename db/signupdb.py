@@ -12,7 +12,6 @@ import datetime as date
 # --- This is for the password encryption
 from flask_bcrypt import Bcrypt
 
-from pydantic import BaseModel
 
 # from connection import 
 
