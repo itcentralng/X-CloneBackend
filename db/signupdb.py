@@ -11,7 +11,6 @@ import datetime as date
 # --- This is for the password encryption
 from flask_bcrypt import Bcrypt
 
-from pydantic import BaseModel
 
 # from connection import 
 
@@ -28,7 +27,7 @@ app = Flask(__name__)
 bcrypt = Bcrypt(app=app)
 
 #---------These are the global varibles for the so i can update them incase
-class confirmers(BaseModel):
+class confirmers():
     username: str 
     mail: str 
     password_confirm: str = "dodo"
