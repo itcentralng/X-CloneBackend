@@ -28,12 +28,13 @@ app = Flask(__name__)
 bcrypt = Bcrypt(app=app)
 
 #---------These are the global varibles for the so i can update them incase
-class confirmers():
-    username: str 
-    mail: str 
-    password_confirm: str = "dodo"
+class Confirmers:
+    def __init__(self):
+        self.username: str = ""
+        self.mail: str = ""
+        self.password_confirm: str = ""
 
-
+confirmers = Confirmers()
 RANDOM_SIZE: int=20
 
 #--- This is the regex function for looping and check if the email ends with @gmail.com
