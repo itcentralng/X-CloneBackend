@@ -31,11 +31,15 @@ from connection.connect_db import get_Connection
 conn =  get_Connection()
     
 
-class confirmers(BaseModel):
-    username: str
-    mail: str 
-    password_confirm: str
-    confirm_hash: str
+class Confirmers():
+    def __init__(self):
+        self.username: str = ""
+        self.mail: str = ""
+        self.password_confirm: str = ""
+        self.confirm_hash: str = ""
+
+confirmers = Confirmers()
+
 
 def emialchecker(email: str):
     check : bool
