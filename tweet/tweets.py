@@ -26,6 +26,7 @@ def Posting_tweet():
         # username = data.get("username")
         tweet_id = uuid.uuid4()
         tweeting = data.get("tweeting")
+        images = data.get("images")
 
         #-- To set the dateTime when post was made
         posttime = datetime.datetime.now()
