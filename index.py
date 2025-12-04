@@ -3,7 +3,8 @@ import datetime as date
 from datetime import datetime
 import jwt
 import psycopg2
-import os
+
+# import os
 from dotenv import load_dotenv
 from flask_cors import CORS
 
