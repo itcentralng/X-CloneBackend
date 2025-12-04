@@ -1,5 +1,4 @@
 from flask import Flask , request , jsonify , make_response 
-from pydantic import BaseModel
 from functools import wraps
 
 #--- This is for the jwt
