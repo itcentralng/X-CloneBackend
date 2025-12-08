@@ -31,11 +31,15 @@ from connection.connect_db import get_Connection
 conn =  get_Connection()
     
 
-class confirmers(BaseModel):
-    username: str
-    mail: str 
-    password_confirm: str
-    confirm_hash: str
+class Confirmers():
+    def __init__(self):
+        self.username: str = ""
+        self.mail: str = ""
+        self.password_confirm: str = ""
+        self.confirm_hash: str = ""
+
+confirmers = Confirmers()
+
 
 def emialchecker(email: str):
     check : bool
@@ -96,6 +100,7 @@ def token_required(f):
             user_info={
                 'username':user_row[1],
                 'email':user_row[2],
+                'id':user_row[0],
             }
 
             if not user_info:

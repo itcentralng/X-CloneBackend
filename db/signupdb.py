@@ -11,13 +11,14 @@ import datetime as date
 # --- This is for the password encryption
 from flask_bcrypt import Bcrypt
 
-from pydantic import BaseModel
 
 # from connection import 
 
 #-- This is for the getting the connection
 
 from connection.connect_db import get_Connection
+
+import uuid
 conn = get_Connection()
 
 
@@ -26,12 +27,13 @@ app = Flask(__name__)
 bcrypt = Bcrypt(app=app)
 
 #---------These are the global varibles for the so i can update them incase
-class confirmers(BaseModel):
-    username: str 
-    mail: str 
-    password_confirm: str = "dodo"
+class Confirmers:
+    def __init__(self):
+        self.username: str = ""
+        self.mail: str = ""
+        self.password_confirm: str = ""
 
-
+confirmers = Confirmers()
 RANDOM_SIZE: int=20
 
 #--- This is the regex function for looping and check if the email ends with @gmail.com
@@ -98,7 +100,8 @@ async def register():
     passwordcheck(inppassword)
 
     encryp_pass= bcrypt.generate_password_hash(password=inppassword).decode("utf-8")
-    random_id = os.urandom(RANDOM_SIZE)
+    random_id = str(uuid.uuid4())
+    print("This is the random id", random_id)
 
     if confirmers.username == "" :
         return {"Sorry your username is null": 310}
