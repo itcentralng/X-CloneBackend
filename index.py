@@ -185,6 +185,20 @@ def not_read():
         return jsonify({"notifications_read":dict(data)})
     except Exception as e:
         return jsonify({"Error":"Database Error","Details":str(e)}),500
+@app.route('/health')
+def health_check():
+    try:
+        psycopg2.connect(
+            host=os.getenv("DBHOST"),
+            dbname=os.getenv("DBNAME"),
+            user=os.getenv("DBUSER"),
+            password=os.getenv("DBPASSWORD"),
+            port=os.getenv("DBPORT"),
+            sslmode="require"
+        )
+    except Exception as e:
+        return jsonify({"status":"unhealthy",
+                        "message":f"DB connection error:{str(e)}"})
 cur.close()
 conn.close()
 # --- I put this back so i can run it with python so i can be reloading
