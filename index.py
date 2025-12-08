@@ -224,6 +224,7 @@ def not_read():
         return jsonify({"Error":"Database Error","Details":str(e)}),500
 @app.route('/health')
 def health_check():
+    status = {}
     try:
         psycopg2.connect(
             host=os.getenv("DBHOST"),
@@ -233,9 +234,15 @@ def health_check():
             port=os.getenv("DBPORT"),
             sslmode="require"
         )
+        status["DB_status"]="healthy"
     except Exception as e:
-        return jsonify({"status":"unhealthy",
-                        "message":f"DB connection error:{str(e)}"})
+        status["DB_status"]=f"Unhealthy,{str(e)}"
+    try:
+        app.run(debug=True)
+        status["flask"]="healthy"
+    except Exception as e:
+        status["flask"]="Unhealthy"
+    
 cur.close()
 conn.close()
 # --- I put this back so i can run it with python so i can be reloading
