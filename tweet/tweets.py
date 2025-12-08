@@ -116,8 +116,7 @@ async def dislike():
     try:
         conn = get_Connection()
         cur = conn.cursor()
-        cur.execute("""INSERT INTO dislike_table (id, tweet_id)
-                    VALUES (%s, %s, 'dislike') """, (user_id, tweet_id))
+        cur.execute("""DELETE FROM dislike_table where id =%s AND tweet_id =%s """, (user_id, tweet_id))
         conn.commit()
 
         if 'conn' in locals() and conn:

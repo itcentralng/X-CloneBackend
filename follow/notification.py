@@ -1,7 +1,7 @@
 from flask import Flask , jsonify , request
 import datetime 
 
-app = Flask()
+app = Flask(__name__)
 from connection.connect_db import get_Connection
 
 @app.route("/notification", methods=["GET"])
