@@ -1,10 +1,6 @@
-from flask import Flask , request , jsonify, flash, send_from_directory, g
+from flask import Flask , request , jsonify
+from flask_bcrypt import Bcrypt
 import os
-from dotenv import load_dotenv
-from werkzeug.utils import secure_filename
-
-
-load_dotenv()
 #--for the connection of the db
 import psycopg2
 
