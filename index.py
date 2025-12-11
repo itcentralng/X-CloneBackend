@@ -3,12 +3,25 @@ import datetime as date
 from datetime import datetime
 import jwt
 import psycopg2
+
 import os
 from dotenv import load_dotenv
 from flask_cors import CORS
 
+from flask_mailman import Mail 
 app = Flask(__name__)
+
+app.config['MAIL_SERVER'] = os.getenv("MAILSERVER") 
+app.config['MAIL_PORT'] = int(os.getenv("MAILPORT"))  
+app.config['MAIL_USE_SSL'] =  True
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USERNAME'] = os.getenv("MAILUSERNAME")
+app.config['MAIL_PASSWORD'] = os.getenv("MAILPASSWORD")
+
 CORS(app=app , supports_credentials=True)
+
+
+mail = Mail(app)
 # from db.connection.connect_db import get_Connection
 
 startTime: date = date.datetime.now()
@@ -27,6 +40,9 @@ from tweet.tweets import Posting_tweet, tweet_list, like, dislike
 #--- This is for the notification of x and follow
 from follow.follow import following, Unfollow
 from follow.notification import notification
+
+#--- This is for the email section
+from mailsenpoint.mailsX import PasswordConfirm , PasswordRequest
 
 
 load_dotenv()
@@ -52,8 +68,8 @@ async def status():
     return jsonify(status)
 
 @app.route("/register" , methods=["POST"])
-async def signup():
-    result = await register()
+def signup():
+    result = register()
     return result
 
 @app.route("/login" , methods=["POST"])
@@ -68,8 +84,7 @@ def profile(username: str):
     if request.method == "GET":
         return profile_fetch(username=username)
     elif request.method == "PATCH":
-        return ("You will soon patch don't worry")
-
+        return profile_fetch(username=username)
 
 
 @app.route("/tweet/create" , methods=["POST"])
@@ -112,6 +127,16 @@ def unfollowing():
 @token_required
 def x_notification():
     result = notification()
+    return result
+
+@app.route("/resetpassword/forgotpassword", methods=["POST"])
+def password_request():
+    result = PasswordRequest()
+    return result
+
+@app.route("/resetpassword/confirm", methods=["POST"])
+def password_confirm():
+    result = PasswordConfirm()
     return result
 
 #Week 2 Task Attahir

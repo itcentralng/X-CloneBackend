@@ -1,54 +1,132 @@
 from flask import Flask , request , jsonify
-import requests
+from flask_mailman import Mail , EmailMessage
 import logging
 
 import os
 from dotenv import load_dotenv
 
-logging.basicConfig(level=logging.INFO) # set log level
+
 load_dotenv() # for reading API key from `.env` file.
 
-# Sandbox API URL format: https://api.mailgun.net/v3/sandbox<ID>.mailgun.org/messages
-MAILGUN_API_URL = "https://api.mailgun.net/v3/YOUR_DOMAIN_NAME/messages"
-FROM_EMAIL_ADDRESS = "Sender Name xcloneitcentral@gmail.com"
+app = Flask(__name__)
+app.config['MAIL_SERVER'] = os.getenv("MAILSERVER") 
+app.config['MAIL_PORT'] = int(os.getenv("MAILPORT"))  
+app.config['MAIL_USE_SSL'] =  True
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USERNAME'] = os.getenv("MAILUSERNAME")
+app.config['MAIL_PASSWORD'] = os.getenv("MAILPASSWORD")
 
-app = Flask()
 
-@app.route("/reset-password/request", methods=["POST"])
+#-- This is for the mail flask_mailman just as the doc says
+mail = Mail(app)
+
+
+#-- This is for the mail connection it's self
+# connection = mail.get_connection()
+
+# # Manually open the connection
+# connection.open()
+
+
+@app.route("/resetpassword/confirm", methods=["POST"])
 async def PasswordRequest():
+    
+    data = request.get_json()
+    email = data.get("email")
+
+    html_message = f"""
+                    <div style='font-family:Arial, sans-serif; background:#f9f9f9; padding:20px;'>
+                        <div style='max-width:600px; margin:auto; background:#ffffff; border:1px solid #ddd; border-radius:8px; padding:24px;'>
+                            <h2 style='color:#333; margin-top:0;'>Confirm Your Password</h2>
+                            <p style='color:#555; font-size:14px; line-height:1.6;'>
+                            To confirm your new password, please click the link below:
+                            </p>
+                            <p style='text-align:center; margin:24px 0;'>
+                            <a href='{{reset_password}}'
+                                style='background:#28a745; color:#fff; text-decoration:none; padding:12px 20px; border-radius:4px; font-weight:bold; cursor:pointer;'>
+                                Confirm Password
+                            </a>
+                            </p>
+                            <p style='color:#555; font-size:13px; line-height:1.6;'>
+                            For security reasons, both links will expire in {{expiry_hours}} hours.
+                            </p>
+                            <hr style='border:none; border-top:1px solid #eee; margin:24px 0;' />
+                        </div>
+                    </div>
+                    """
     try:
-        api_key = os.getenv("MAILGUN_API_KEY")  
-        data = request.get_json()
-        to_address = data.get("to_address")
+        msg = EmailMessage(
+            subject='X clone Confirm Password',
+            body=html_message,
+            to=[f'{str(email)}'],
+            from_email=f'{os.getenv("FROMMAIL")}'
+        )
+        msg.content_subtype = "html"
+        msg.send()
 
-        resp = requests.post(MAILGUN_API_URL, auth=("api", api_key),
-                             data={"from": FROM_EMAIL_ADDRESS,
-                                   "to": to_address, "subject": "Reset Password", "text": "Good Day, Welcome to Reset Password how would you like to me do it"})
-        if resp.status_code == 200:  # success
-            # logging.info(f"Successfully sent an email to '{to_address}' via Mailgun API.")
-            jsonify ({"Message":f"Successfully sent an email to '{to_address}' via Mailgun API."})
-        else:  # error
-            logging.error(f"Could not send the email, reason: {resp.text}")
-
+        return jsonify({"status":"successfull", "Message":"Mail sent successfully"}), 200
+       
     except Exception as ex:
-        logging.exception(f"Mailgun error: {ex}")
+        return(f"Mail error: {str(ex)}")
 
-@app.route("/reset-password/confirm", methods=["POST"])
-async def PasswordConfirm():
+@app.route("/resetpassword/forgotpassword", methods=["POST"])
+def PasswordConfirm():
+
+    data = request.get_json()
+    email = data.get("email")
+
+    html_message = f"""
+                    <div style='font-family:Arial, sans-serif; background:#f9f9f9; padding:20px;'>
+                        <div style='max-width:600px; margin:auto; background:#ffffff; border:1px solid #ddd; border-radius:8px; padding:24px;'>
+                            <h2 style='color:#333; margin-top:0;'>Password Reset Request</h2>
+                            <p style='color:#555; font-size:14px; line-height:1.6;'>
+                            You requested to reset your password. Click the button below to set a new one.
+                            </p>
+                            <p style='text-align:center; margin:24px 0;'>
+                            <a href='{{confirm_password}}'
+                                style='background:#1d9bf0; color:#fff; text-decoration:none; padding:12px 20px; border-radius:4px; font-weight:bold; cursor:pointer;'>
+                                Reset Password
+                            </a>
+                            </p>
+                            <p style='color:#555; font-size:13px; line-height:1.6;'>
+                            If you didn’t request this, you can ignore this email — your password will remain unchanged.
+                            </p>
+                            <hr style='border:none; border-top:1px solid #eee; margin:24px 0;' />
+                        </div>
+                    </div>
+                    """
     try:
-        api_key = os.getenv("MAILGUN_API_KEY")  
-        data = request.get_json()
-        to_address = data.get("to_address")
-
-        resp = requests.post(MAILGUN_API_URL, auth=("api", api_key),
-                             data={"from": FROM_EMAIL_ADDRESS,
-                                   "to": to_address, "subject": "Reset Password", "text": "Good Day, Welcome to Confirm X accoutn how would you like to me do it"})
-        if resp.status_code == 200:  # success
-            # logging.info(f"Successfully sent an email to '{to_address}' via Mailgun API.")
-            jsonify ({"Message":f"Successfully sent an email to '{to_address}' via Mailgun API."}), 200
-        else:  # error
-            logging.error(f"Could not send the email, reason: {resp.text}")
-            jsonify ({"Message":f"Could not send the email, reason: {resp.text}"}), 500
-
+        msg = EmailMessage(
+            subject='X clone Password Reset',
+            body=html_message,
+            to=[f'{str(email)}'],
+            from_email=f'{os.getenv("FROMMAIL")}'
+        )
+        msg.content_subtype = "html"
+        msg.send()
+        
+        return jsonify({"status":"successfull", "Message":"Mail sent successfully"}), 200
+     
     except Exception as ex:
-        logging.exception(f"Mailgun error: {ex}")
+        return(f"Mail error: {str(ex)}")
+
+
+#----This was a testing mailing endpoint
+# @app.route("/sendmail", methods=["GET"])
+# def sendingmail():
+#     try:
+#         msg = EmailMessage(
+#             subject='X clone Forgotten Password Reset',
+#             body='Forgotten password kindly reset your password ussing the link i will provide',
+#             to=[os.getenv("TESTRECIPANT")],
+#             from_email='x@gmail.com'
+#         )
+#         msg.send()
+#         return jsonify({"status":"successfull", "Message":"Mail sent successfully"}), 200
+       
+#     except Exception as e:
+#         return jsonify({"status":"error","Message":f"Error occured: {str(e)}"}), 500
+
+if __name__ == "__main__":
+    app.run(debug=True)
+

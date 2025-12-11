@@ -6,7 +6,7 @@ from flask import g
 
 load_dotenv()
 
- 
+
 #-- This is for the getting the connection
 def get_Connection():
         return psycopg2.connect(

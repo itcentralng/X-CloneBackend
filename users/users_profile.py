@@ -35,16 +35,28 @@ def profile_fetch(username):
             elif not result:
                 return {"USER DOES NOT EXIST !": 404}
             
-       
-        #----- THIS IS TO PATCH SOME USERS
-        if request.method == "PATCH":
-            return {"Hmmmm Still Patching", 404}
         
     except psycopg2.Error as e:
         return jsonify({e} , 404)
     except Exception as error:
         return jsonify({f"Fatal error at back {error}"}, 500)
 
+
+@app.route("/profileupdate/<username>", methods=["PATCH"])
+def updateProfile(username):
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute("UPDATE x_db SET bob=%s SET username=%s SET profileimg=%s WHERE username=%s id=%s",
+                    (request.json['email'], username, request.json['id']))
+        conn.commit()
+        return jsonify({"status":"success", "message":"Profile updated"}), 200
+
+    except psycopg2.Error as e:
+        return jsonify({e} , 404)
+    except Exception as error:
+        return jsonify({f"Fatal error at back {error}"}, 500)
 
 if __name__ == "__main__":
     #--- To get the port 
