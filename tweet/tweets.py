@@ -19,7 +19,7 @@ app = Flask(__name__)
 
 # UPLOAD_FOLDER = os.path.join(app.root_path, "static", "media")
 # UPLOAD_FOLDER = os.getenv("UPLOAD_DEST")
-# ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 # app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = uuid.uuid4().hex
@@ -69,11 +69,11 @@ def Posting_tweet():
         posttime = datetime.datetime.now()
 
         cur.execute("""INSERT INTO tweets VALUES(%s,%s,%s,%s)""", 
-                                (str(tweet_id),tweeting, posttime, urls))
+                                (str(tweet_id),tweeting, posttime, tweetimage))
 
         conn.commit()
 
-        return jsonify({"Post":f"{str(tweeting)}" , "time":f"{str(posttime)}", "image_url":urls}), 200
+        return jsonify({"Post":f"{str(tweeting)}" , "time":f"{str(posttime)}", "image_url":tweetimage}), 200
 
     except psycopg2.IntegrityError as error:
          return jsonify({"error": str(error)}), 400
