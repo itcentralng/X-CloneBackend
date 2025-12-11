@@ -106,10 +106,14 @@ def register():
     
     cur = connect.cursor()
 
-    inpusername = request.form.get("username")
-    inpdate = str(request.form.get("dataofbirth"))
-    inpemail = request.form.get("email")
-    inppassword = request.form.get("password")
+    data = request.get_json(cache=True)
+    inpusername = data.get("username")
+    inpdate = str(data.get("dataofbirth"))
+    inpemail = data.get("email")
+    inppassword = data.get("password")
+
+    profile_url = data.get("profileurl")
+    cover_url = data.get("coverurl")
     
 
     emailchecker(inpemail)
