@@ -41,7 +41,9 @@ def Posting_tweet():
 
         cur = conn.cursor()
         tweet_id = uuid.uuid4()
-        tweeting = request.form.get("tweeting")
+        data = request.get_json(cache=True)
+        tweeting = data.get("tweeting")
+        tweetimage = data.get("tweetimage")
 
 
         #--- Incase you deceided to you know 
