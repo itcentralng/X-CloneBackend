@@ -1,10 +1,7 @@
-from flask import Flask , request , jsonify, flash, send_from_directory, g
+from flask import Flask , request , jsonify
+from flask_bcrypt import Bcrypt
 import os
 from dotenv import load_dotenv
-from werkzeug.utils import secure_filename
-
-
-load_dotenv()
 #--for the connection of the db
 import psycopg2
 
@@ -25,7 +22,7 @@ from connection.connect_db import get_Connection
 import uuid
 conn = get_Connection()
 
-
+load_dotenv()
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app=app)
@@ -33,7 +30,7 @@ bcrypt = Bcrypt(app=app)
 # UPLOAD_FOLDER = os.path.join(app.root_path, "static", "media")
 # UPLOAD_FOLDER_PROFILE = os.getenv("UPLOAD_DEST_PROFILE")
 # UPLOAD_FOLDER_COVER = os.getenv("UPLOAD_DEST_COVER")
-# ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 # app.config['UPLOAD_FOLDER_PROFILE'] = UPLOAD_FOLDER_PROFILE
 # app.config['UPLOAD_FOLDER_COVER'] = UPLOAD_FOLDER_COVER

@@ -26,7 +26,7 @@ def notification():
 
         if cur.rowcount +1:
             return jsonify({"message":"Notification added"}), 200
-        else :
+        else:
             return jsonify({"message":"error from the adding"}), 404
         
     except psycopg2.IntegrityError as error:
@@ -37,3 +37,4 @@ def notification():
     finally:
         cur.close()
         conn.close()
+        

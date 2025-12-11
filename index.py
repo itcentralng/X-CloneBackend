@@ -65,7 +65,6 @@ async def status():
         "uptime": str(date.datetime.now() - startTime),
         "timestamp": str(date.datetime.now())
     }
-
     return jsonify(status)
 
 @app.route("/register" , methods=["POST"])
@@ -145,29 +144,16 @@ def password_confirm():
 @token_required
 def user():
     try:
-
         cur.execute("""SELECT * FROM x_db""")
         users = cur.fetchall()
-        return jsonify({"users": users})
-        
+        return jsonify({"users": dict(users)})
     except psycopg2.Error as e:
         return {"error": str(e)}
 #Attahir Week 4
-
 @app.route('/users/me',methods=["GET"])
 @token_required
 def me():
-
-    '''
-    
-    STEP1: Extract and validate JWT Token from auth header
-    STEP2: Get user_email from token_payload
-    STEP3: Query DB for user_email
-    STEP4: Format and return json response with details.
-    STEP5: Handle errors
-    
-    '''
-    app.config['SECRET_KEY'] = 'v0gXEKYBouAqIUbw'
+    app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
     if not request.get.headers('Authorization'):
         return jsonify({'Unauthorized Request':404})
     else:
@@ -175,26 +161,94 @@ def me():
         jwt_token = auth_header.split()[1]
         payload = jwt.decode(jwt_token,app.config['SECRET_KEY'],algorithms=['HS256'])
         email = payload['email']
-        cur.execute(f"SELECT * FROM xsignup WHERE email = {email}")
-        user = cur.fetchall()
-    
-    return jsonify({'User_Info':user})
+        cur.execute("SELECT * FROM x_db WHERE email = %s",(email,))
+        user = cur.fetchone()
+        
+    return jsonify({'User_Info':dict(user)})
 
-#Week5 Attahir 
-@app.route('/tweet/list',methods=['GET'])
-@token_required
-def alltweet():
-    cur.execute("SELECT * FROM tweetlist")
-    all_tweets = cur.fetchall()
+#WEEK5 & 7 Attahir 
+@app.route('/<tweet>/list',methods=['GET'])
+def list_tweet(tweet):
+    try:
+        tweet = int(tweet)
+    except ValueError:
+        return jsonify({"error":"invalid Tweet id"}),400
+    data = request.get_json()
+    user_id = data["user_id"]
+    liked_status = False
+    try:
+        cur.execute("SELECT * FROM tweets WHERE tweet_id = %s",(tweet,))
+        my_tweet = cur.fetchone()
+                                #(username,tweets,t_id,time)
+        if my_tweet is None:
+            return jsonify({"error":"Tweet Not Found"}),404
+    except Exception as e:
+        return jsonify({"Error":"Database Error","Details":str(e)}),500
+    try:
+        cur.execute("SELECT * FROM likes_table WHERE tweet_id = %s",(tweet,))
+        tweet_like = cur.fetchone()
+                                #(tweet_id,users_liked,id)
+        if tweet_like is not None:
+            users_liked = tweet_like[1]
+        else:
+            users_liked = []
+        if user_id in users_liked:
+            liked_status = True
+        like_count = len(users_liked)
+        return jsonify({"Like Count":like_count,"Like Status":liked_status})
+    except Exception as e:
+        return jsonify({"Error":"Database Error","Details":str(e)}),500
 
-    return jsonify({"All Tweets":all_tweets})
-
-
-
+@app.route('/following/<id>')
+def following_id(id):
+    try:
+        user_id = int(id)
+    except ValueError:
+        return jsonify({"error":"invalid User id"})
+    try:
+        cur.execute("SELECT COUNT(following_id) FROM follow_table WHERE users_id = %s",(user_id,))
+        data = cur.fetchone()
+        if data is None:
+            return jsonify({"error User id not found"}),404
+        following = user[0]
+        return jsonify({"no_of_following":following})
+    except Exception as e:
+        return jsonify({"Error":"Database Error","Details":str(e)}),500
+@app.route('/followers/<id>')
+def followers_id(id):
+    try:
+        user_id = int(id)
+    except ValueError:
+        return jsonify({"error":"invalid User id"})
+    try:
+        cur.execute("SELECT COUNT(follwers_id) FROM follow_table WHERE users_id = %s",(user_id,))
+        data = cur.fetchone()
+        if data is None:
+            return jsonify({"error User id not found"}),404
+        followers = user[0]
+        return jsonify({"no_of_followers":followers})
+    except Exception as e:
+        return jsonify({"Error":"Database Error","Details":str(e)}),500
+@app.route('/image/<id>')
+def get_image(id):
+    try:
+        image_id = int(id)
+    except ValueError:
+        return jsonify({"error":"invalid User id"})
+    image_path = "test.png" #Path+id.png
+    with open(image_path,"r") as f:
+        image = f.read(image_path)
+    return jsonify({"image":image})
+@app.route('/notification/read')
+def not_read():
+    try:
+        cur.execute("SELECT from notification values WHERE read = 1")
+        data = cur.fetchall()
+        return jsonify({"notifications_read":dict(data)})
+    except Exception as e:
+        return jsonify({"Error":"Database Error","Details":str(e)}),500
 cur.close()
-conn.close()  
-
-
+conn.close()
 # --- I put this back so i can run it with python so i can be reloading
 # --- If run flask --app (py) run it won't be reloading if their are any changes in the code
 
