@@ -1,6 +1,9 @@
-from flask import Flask , request , jsonify
+from flask import Flask , request , jsonify, flash, send_from_directory, g
 import os
 from dotenv import load_dotenv
+from werkzeug.utils import secure_filename
+
+
 load_dotenv()
 #--for the connection of the db
 import psycopg2
@@ -26,6 +29,19 @@ conn = get_Connection()
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app=app)
+
+# UPLOAD_FOLDER = os.path.join(app.root_path, "static", "media")
+# UPLOAD_FOLDER_PROFILE = os.getenv("UPLOAD_DEST_PROFILE")
+# UPLOAD_FOLDER_COVER = os.getenv("UPLOAD_DEST_COVER")
+# ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+# app.config['UPLOAD_FOLDER_PROFILE'] = UPLOAD_FOLDER_PROFILE
+# app.config['UPLOAD_FOLDER_COVER'] = UPLOAD_FOLDER_COVER
+app.secret_key = uuid.uuid4().hex
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 #---------These are the global varibles for the so i can update them incase
 class Confirmers:
@@ -84,17 +100,17 @@ def passwordcheck(password_check: str):
 
 #--- This is where the routing is for the signup
 @app.route("/register" , methods=["POST"])
-async def register():
+def register():
 
-    conn = get_Connection()
+    connect = conn
     
-    cur = conn.cursor()
-    data = request.get_json(force=True, cache=True )
+    cur = connect.cursor()
 
-    inpusername = data.get("username")
-    inpdate = data.get("dataofbirth")
-    inpemail = data.get("email")
-    inppassword = data.get("password")
+    inpusername = request.form.get("username")
+    inpdate = str(request.form.get("dataofbirth"))
+    inpemail = request.form.get("email")
+    inppassword = request.form.get("password")
+    
 
     emailchecker(inpemail)
     usernamechecker(inpusername)
@@ -111,12 +127,45 @@ async def register():
     # elif confirmers.password_confirm == "":
     #     return {"Sorry your Password is null": 312}
     
+
+        ##--- This is for the image section
+    # profile_url=[]
+    # cover_url=[]
+    # for file in request.files.getlist('profileimage'):
+    #     # If the user does not select a file, the browser submits an
+    #     # empty file without a filename.
+    #     if file.filename == '':
+    #         flash('No selected file')
+    #         # return jsonify({"Message":"Sorry no selected file"}), 400
+    #         continue
+        
+    #     if file and allowed_file(file.filename):
+    #         filename = secure_filename(file.filename)
+    #         save_path = os.path.join(app.config['UPLOAD_FOLDER_PROFILE'], filename)
+    #         file.save(save_path)
+    #         profile_url.append(f"/profile/{filename}")
+
+    # for file in request.files.getlist('coverimage'):
+    #     # If the user does not select a file, the browser submits an
+    #     # empty file without a filename.
+    #     if file.filename == '':
+    #         flash('No selected file')
+    #         # return jsonify({"Message":"Sorry no selected file"}), 400
+    #         continue
+        
+    #     if file and allowed_file(file.filename):
+    #         filename = secure_filename(file.filename)
+    #         save_path = os.path.join(app.config['UPLOAD_FOLDER_COVER'], filename)
+    #         file.save(save_path)
+    #         cover_url.append(f"/coverimage/{filename}")
+
+
     try:
         
         mail = confirmers.mail
-        cur.execute("""INSERT INTO x_db (id , username , email, dob , passwordacc)
-                    VALUES (%s , %s , %s , %s , %s) """, 
-                    (random_id , confirmers.username ,mail , inpdate , encryp_pass))
+        cur.execute("""INSERT INTO x_db (id , username , email, dob , passwordacc, profileimage, coverimage)
+                    VALUES (%s , %s , %s , %s , %s, %s, %s) """, 
+                    (random_id , confirmers.username ,mail , inpdate , encryp_pass, profile_url, cover_url))
 
         print("Username:", confirmers.username)
         print("Mail: ", mail)

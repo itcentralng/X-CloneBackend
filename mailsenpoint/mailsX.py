@@ -28,7 +28,7 @@ mail = Mail(app)
 # connection.open()
 
 
-@app.route("/resetpassword/forgotpassword", methods=["POST"])
+@app.route("/resetpassword/confirm", methods=["POST"])
 async def PasswordRequest():
     
     data = request.get_json()
@@ -42,7 +42,7 @@ async def PasswordRequest():
                             To confirm your new password, please click the link below:
                             </p>
                             <p style='text-align:center; margin:24px 0;'>
-                            <a href='{{confirm_link}}'
+                            <a href='{{reset_password}}'
                                 style='background:#28a745; color:#fff; text-decoration:none; padding:12px 20px; border-radius:4px; font-weight:bold; cursor:pointer;'>
                                 Confirm Password
                             </a>
@@ -56,22 +56,20 @@ async def PasswordRequest():
                     """
     try:
         msg = EmailMessage(
-            subject='X clone Password Reset',
+            subject='X clone Confirm Password',
             body=html_message,
             to=[f'{str(email)}'],
-            from_email='x@gmail.com'
+            from_email=f'{os.getenv("FROMMAIL")}'
         )
         msg.content_subtype = "html"
         msg.send()
-        if msg.send():
-            return jsonify({"status":"successfull", "Message":"Mail sent successfully"}), 200
-        else: 
-            return jsonify({"status":"failed","Message":"Failed to send mail"}), 500
 
+        return jsonify({"status":"successfull", "Message":"Mail sent successfully"}), 200
+       
     except Exception as ex:
         return(f"Mail error: {str(ex)}")
 
-@app.route("/resetpassword/confirm", methods=["POST"])
+@app.route("/resetpassword/forgotpassword", methods=["POST"])
 def PasswordConfirm():
 
     data = request.get_json()
@@ -85,7 +83,7 @@ def PasswordConfirm():
                             You requested to reset your password. Click the button below to set a new one.
                             </p>
                             <p style='text-align:center; margin:24px 0;'>
-                            <a href='{{reset_link}}'
+                            <a href='{{confirm_password}}'
                                 style='background:#1d9bf0; color:#fff; text-decoration:none; padding:12px 20px; border-radius:4px; font-weight:bold; cursor:pointer;'>
                                 Reset Password
                             </a>
@@ -99,41 +97,35 @@ def PasswordConfirm():
                     """
     try:
         msg = EmailMessage(
-            subject='X clone Confirm Password',
+            subject='X clone Password Reset',
             body=html_message,
             to=[f'{str(email)}'],
-            from_email='x@gmail.com'
+            from_email=f'{os.getenv("FROMMAIL")}'
         )
         msg.content_subtype = "html"
         msg.send()
-        if msg.send():
-            return jsonify({"status":"successfull", "Message":"Mail sent successfully"}), 200
-        else: 
-            return jsonify({"status":"failed","Message":"Failed to send mail"}), 500
-        # return jsonify({"status":"successfull", "Message":"Mail sent successfully"}), 200
-
+        
+        return jsonify({"status":"successfull", "Message":"Mail sent successfully"}), 200
+     
     except Exception as ex:
         return(f"Mail error: {str(ex)}")
 
 
-@app.route("/sendmail", methods=["GET"])
-def sendingmail():
-    try:
-        msg = EmailMessage(
-            subject='X clone Forgotten Password Reset',
-            body='Forgotten password kindly reset your password ussing the link i will provide',
-            to=['aishamuarin@gmail.com'],
-            from_email='x@gmail.com'
-        )
-        msg.send()
-        # if msg.send():
-        #     return jsonify({"status":"successfull", "Message":"Mail sent successfully"}), 200
-        # else: 
-        #     return jsonify({"status":"failed","Message":"Failed to send mail"}), 500
-        return jsonify({"status":"successfull", "Message":"Mail sent successfully"}), 200
+#----This was a testing mailing endpoint
+# @app.route("/sendmail", methods=["GET"])
+# def sendingmail():
+#     try:
+#         msg = EmailMessage(
+#             subject='X clone Forgotten Password Reset',
+#             body='Forgotten password kindly reset your password ussing the link i will provide',
+#             to=[os.getenv("TESTRECIPANT")],
+#             from_email='x@gmail.com'
+#         )
+#         msg.send()
+#         return jsonify({"status":"successfull", "Message":"Mail sent successfully"}), 200
        
-    except Exception as e:
-        return jsonify({"status":"error","Message":f"Error occured: {str(e)}"}), 500
+#     except Exception as e:
+#         return jsonify({"status":"error","Message":f"Error occured: {str(e)}"}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -69,8 +69,8 @@ async def status():
     return jsonify(status)
 
 @app.route("/register" , methods=["POST"])
-async def signup():
-    result = await register()
+def signup():
+    result = register()
     return result
 
 @app.route("/login" , methods=["POST"])
@@ -85,8 +85,7 @@ def profile(username: str):
     if request.method == "GET":
         return profile_fetch(username=username)
     elif request.method == "PATCH":
-        return ("You will soon patch don't worry")
-
+        return profile_fetch(username=username)
 
 
 @app.route("/tweet/create" , methods=["POST"])
