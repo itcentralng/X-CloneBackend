@@ -1,8 +1,10 @@
-from flask import Flask , jsonify , request 
+from flask import Flask, app , jsonify , request 
 import datetime as date
 from datetime import datetime
 import jwt
 import psycopg2
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
 
 import os
 from dotenv import load_dotenv
@@ -10,18 +12,26 @@ from flask_cors import CORS
 
 from flask_mailman import Mail 
 app = Flask(__name__)
+load_dotenv()
 
 app.config['MAIL_SERVER'] = os.getenv("MAILSERVER") 
-app.config['MAIL_PORT'] = int(os.getenv("MAILPORT"))  
+app.config['MAIL_PORT'] = os.getenv("MAILPORT")
 app.config['MAIL_USE_SSL'] =  True
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USERNAME'] = os.getenv("MAILUSERNAME")
 app.config['MAIL_PASSWORD'] = os.getenv("MAILPASSWORD")
 
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DB_CONNECTION")
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db_table = SQLAlchemy(app)
+migrate = Migrate(app, db=db_table)
+
 CORS(app=app , supports_credentials=True)
 
 
 mail = Mail(app)
+
 # from db.connection.connect_db import get_Connection
 
 startTime: date = date.datetime.now()
@@ -44,8 +54,10 @@ from follow.notification import notification
 #--- This is for the email section
 from mailsenpoint.mailsX import PasswordConfirm , PasswordRequest
 
+#--- This for the Model
+from models.dbMigrate import User , followtable , notificationmodel , tweets , like_table
 
-load_dotenv()
+
 
 from connection.connect_db import get_Connection
 

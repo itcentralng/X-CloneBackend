@@ -170,9 +170,9 @@ def dislike():
         conn.close()
         cur.close()
 
-@app.route('/imagepicker/<filename>', methods=["GET"])
-def serve_image(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+# @app.route('/imagepicker/<filename>', methods=["GET"])
+# def serve_image(filename):
+#     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
     # return str(filename)
 
 if __name__ == "__main__":
