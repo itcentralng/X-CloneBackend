@@ -20,7 +20,7 @@ def following():
 
         
 
-        cur.execute("INSERT INTO followtable values (%s , %s)", (user_id , follower_id))
+        cur.execute("INSERT INTO follow_table values (%s , %s)", (user_id , follower_id))
 
         conn.commit()
         # print(f"This is results {cur.rowcount > 0}")
@@ -61,8 +61,7 @@ def Unfollow():
         conn = get_Connection()
         cur = conn.cursor()
 
-        # return jsonify({"Unfollowed": "Sucessfull" }), 200
-        executed = cur.execute("DELETE FROM followtable WHERE user_id = %s AND followe = %s" ,
+        executed = cur.execute("DELETE FROM follow_table WHERE id = %s AND follower_id = %s" ,
                 (str(user_id), str(followe_id)))
         print(f"Row deleted: {cur.rowcount}")
 

@@ -73,7 +73,7 @@ def Posting_tweet():
 
         conn.commit()
 
-        return jsonify({"Post":f"{str(tweeting)}" , "time":f"{str(posttime)}", "image_url":tweetimage}), 200
+        return jsonify({"Post":f"{str(tweeting)}" , "time":f"{str(posttime)}", "image_url":tweetimage, "tweet_id":str(tweet_id)}), 200
 
     except psycopg2.IntegrityError as error:
          return jsonify({"error": str(error)}), 400
@@ -127,7 +127,6 @@ def like():
         cur.execute("""
             INSERT INTO like_table (user_id, tweet_id)
             VALUES (%s, %s)
-            ON CONFLICT (user_id, tweet_id) DO NOTHING;
         """, (str(user_id), tweet_id))
         conn.commit()
 

@@ -16,12 +16,12 @@ def notification():
         user_id = g.user_info['id']
         message = data.get("message")
         catigory = data.get("catigory")
-        read = data.get("donereading")
+        # read = data.get("donereading")
 
 
 
-        cur.execute("INSERT INTO notification values(%s, %s , %s, %s, %s)", 
-                                    (str(user_id),message,catigory,read,str(datetime.datetime.now())));
+        cur.execute("INSERT INTO notification values(%s, %s , %s, %s)", 
+                                    (str(user_id),message,catigory,str(datetime.datetime.now())));
         conn.commit()
 
         if cur.rowcount +1:
@@ -34,7 +34,7 @@ def notification():
     
     except Exception as error:
         return jsonify({"error":f"Internal Error: {str(error)}"}) , 500
-    finally:
-        cur.close()
-        conn.close()
+    # finally:
+    #     cur.close()
+    #     conn.close()
         

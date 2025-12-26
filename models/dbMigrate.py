@@ -43,7 +43,7 @@ class notificationmodel(db_table.Model):
 
 class tweets(db_table.Model):
     __tablename__ = 'tweets'
-
+    
     tweet_id = db_table.Column(db_table.String,  nullable=False, primary_key=True)
     tweeting = db_table.Column(db_table.String(256),  nullable=False)
     posttime = db_table.Column(db_table.String(128),  nullable=False)
