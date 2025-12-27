@@ -190,12 +190,12 @@ def logindb():
         return (f"fatal Error when selecting {str(e)}")
         # print("error")
 
-    finally:
-        try:
-            cur.close()
-            conn.close()
-        except Exception as cleanup_error:
-            return jsonify({"Error": f"{(str(cleanup_error))}"}), 500
+    # finally:
+        # try:
+        #     cur.close()
+        #     conn.close()
+        # except Exception as cleanup_error:
+        #     return jsonify({"Error": f"{(str(cleanup_error))}"}), 500
 
 
 if __name__ == "__main__":
