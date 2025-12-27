@@ -30,9 +30,11 @@ def notification():
             return jsonify({"message":"error from the adding"}), 404
         
     except psycopg2.IntegrityError as error:
-         return jsonify({"error": "Nofication already added"}), 400
-    
+        conn.rollback()
+        return jsonify({"error": "Nofication already added", "reason": str(error)}), 400
+
     except Exception as error:
+        conn.rollback()
         return jsonify({"error":f"Internal Error: {str(error)}"}) , 500
     # finally:
     #     cur.close()

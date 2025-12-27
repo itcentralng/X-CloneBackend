@@ -37,8 +37,10 @@ def profile_fetch(username):
             
         
     except psycopg2.Error as e:
-        return jsonify({e} , 404)
+        conn.rollback()
+        return jsonify({"reason": str(e)}, 404)
     except Exception as error:
+        conn.rollback()
         return jsonify({f"Fatal error at back {error}"}, 500)
 
 
@@ -54,8 +56,10 @@ def updateProfile(username):
         return jsonify({"status":"success", "message":"Profile updated"}), 200
 
     except psycopg2.Error as e:
-        return jsonify({e} , 404)
+        conn.rollback()
+        return jsonify({"reason": str(e)}, 404)
     except Exception as error:
+        conn.rollback()
         return jsonify({f"Fatal error at back {error}"}, 500)
 
 if __name__ == "__main__":

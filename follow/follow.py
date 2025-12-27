@@ -43,6 +43,7 @@ def following():
             "detail": errormessage  # convert exception to string
         }), 400
     except Exception as error:
+        conn.rollback()
         return jsonify({"Error": str(error)}), 500
 
     # finally:
@@ -73,6 +74,7 @@ def Unfollow():
 
         return {"message": "Unfollow sucessfull"}, 200
     except UniqueViolation as e:
+        conn.rollback()
         errormessage: str = str(e)
         
         
@@ -81,6 +83,7 @@ def Unfollow():
             "detail": errormessage  # convert exception to string
         }), 400
     except Exception as error:
+        conn.rollback()
         return jsonify({"Error": str(error)}) , 500
     # finally:
     #     conn.close()

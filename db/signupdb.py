@@ -52,28 +52,23 @@ RANDOM_SIZE: int=20
 
 #--- This is the regex function for looping and check if the email ends with @gmail.com
 def emailchecker(email: str):
-    check : bool
-    if len(email) > 13:
-        print("Email is more than 13 characters", email)
-        if "@" in email and ".com" in email:
-            confirmers.mail = email
-            check = True
-        else :
-            check = False
-        
-        if check:
-            print("The email is a valid one" )
-        elif not check:
-            print("This is not a valid mail")
-
-        try:
-            print(confirmers.mail)
-        except Exception as e:
-            print(f"{e} this is the reason")
-            return ""
-    else:
-        print("This is email is less than < 13 characters")
-        return ("Email can't be added")
+    """
+    Validate email and return (bool, message).
+    True, None  -> valid
+    False, str  -> invalid with error message
+    """
+    if not email:
+        return False, "Email is required"
+    if len(email) < 5:
+        return False, "Email is too short"
+    # basic checks; adapt with regex if needed
+    if len(email) > 13 and "@" in email and ".com" in email:
+        confirmers.mail = email
+        return True, None
+    return False, "The email is not a valid one"
+    # else:
+    #     print("This is email is less than < 13 characters")
+    #     return ("Email can't be added")
     
 def usernamechecker(username_check: str):
     try:
@@ -112,7 +107,7 @@ def register():
     profile_url = data.get("profileurl")
     cover_url = data.get("coverurl")
     
-
+    check: bool 
     emailchecker(inpemail)
     usernamechecker(inpusername)
     passwordcheck(inppassword)
@@ -177,11 +172,16 @@ def register():
         return jsonify({"status": "success", "username": confirmers.username, "email": confirmers.mail , "password": encryp_pass})
     
     except psycopg2.IntegrityError as error:
+        conn.rollback()
         if "duplicate key value violates unique constraint" in str(error):
-            return {"User Email Exist Already": 500}
+            return jsonify({"message": "User Email Exist Already"}), 500
         else :
             return jsonify({"error": f"Database integrity error: {str(error)}"}), 400
     except Exception as e:
+        conn.rollback()
+        ok, msg = emailchecker(inpemail)
+        if not ok:
+            return jsonify({"message": str(msg)}), 500
         return jsonify({"error": f"Error from the tweet Backend: {str(e)}"}), 500
 
     # finally:

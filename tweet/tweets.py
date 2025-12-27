@@ -76,8 +76,10 @@ def Posting_tweet():
         return jsonify({"Post":f"{str(tweeting)}" , "time":f"{str(posttime)}", "image_url":tweetimage, "tweet_id":str(tweet_id)}), 200
 
     except psycopg2.IntegrityError as error:
+         conn.rollback()
          return jsonify({"error": str(error)}), 400
     except Exception as e:
+         conn.rollback()
          return jsonify({"error": f"Error from the tweet Backend: {str(e)}"}), 500
     # finally:
     #     if cur: cur.close()
@@ -104,6 +106,7 @@ async def tweet_list(username):
         return jsonify({"Results": results}), 200
 
     except Exception as codeError:
+        conn.rollback()
         return jsonify({"Error: ": f"{codeError}"}), 500
     # finally:
     #     cur.close()
@@ -134,10 +137,12 @@ def like():
         return jsonify({'message': 'Item liked successfully'}), 200
 
     except psycopg2.IntegrityError as error:
-        if "duplicate key value violates unique constraint \"like_table_pkey\"\nDETAIL:  Key (user_id)" in str(error):
+        conn.rollback()
+        if "duplicate key value violates unique constraint" in str(error):
             return jsonify({"error": "User has already liked this tweet"}), 400
 
     except Exception as e:
+        conn.rollback()
         return jsonify({'error': str(e)}), 500
     # finally:
     #     cur.close()
@@ -167,7 +172,7 @@ def dislike():
     
 
     except Exception as e:
-        pass
+        conn.rollback()
         return jsonify({'error': str(e)}), 500
     # finally:
     #     conn.close()
