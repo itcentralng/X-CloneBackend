@@ -85,8 +85,8 @@ def signup():
     return result
 
 @app.route("/login" , methods=["POST"])
-async def login():
-    result = await logindb()
+def login():
+    result = logindb()
     return result
 
 #--- This is for the profile route
