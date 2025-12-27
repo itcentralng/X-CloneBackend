@@ -120,7 +120,7 @@ def token_required(f):
 
 
 @app.route("/login" , methods=["POST"])
-async def logindb():
+def logindb():
 
     cur = conn.cursor()
     data = request.get_json(force=True, cache=True )
