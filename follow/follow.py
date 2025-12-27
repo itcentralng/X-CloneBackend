@@ -45,9 +45,9 @@ def following():
     except Exception as error:
         return jsonify({"Error": str(error)}), 500
 
-    finally:
-        conn.close()
-        cur.close()
+    # finally:
+    #     conn.close()
+    #     cur.close()
 
 @app.route("/unfollow", methods=["POST"])
 def Unfollow():
@@ -82,7 +82,7 @@ def Unfollow():
         }), 400
     except Exception as error:
         return jsonify({"Error": str(error)}) , 500
-    finally:
-        conn.close()
-        cur.close()
+    # finally:
+    #     conn.close()
+    #     cur.close()
 

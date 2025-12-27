@@ -133,6 +133,10 @@ def like():
         
         return jsonify({'message': 'Item liked successfully'}), 200
 
+    except psycopg2.IntegrityError as error:
+        if "duplicate key value violates unique constraint \"like_table_pkey\"\nDETAIL:  Key (user_id)" in str(error):
+            return jsonify({"error": "User has already liked this tweet"}), 400
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     # finally:
