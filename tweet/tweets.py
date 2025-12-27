@@ -79,9 +79,9 @@ def Posting_tweet():
          return jsonify({"error": str(error)}), 400
     except Exception as e:
          return jsonify({"error": f"Error from the tweet Backend: {str(e)}"}), 500
-    finally:
-        if cur: cur.close()
-        if conn: conn.close() 
+    # finally:
+    #     if cur: cur.close()
+    #     if conn: conn.close() 
     
 
 
@@ -105,9 +105,9 @@ async def tweet_list(username):
 
     except Exception as codeError:
         return jsonify({"Error: ": f"{codeError}"}), 500
-    finally:
-        cur.close()
-        conn.close() 
+    # finally:
+    #     cur.close()
+    #     conn.close() 
 
 
 @app.route("/tweet/like" , methods=["POST"])
@@ -135,9 +135,9 @@ def like():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-    finally:
-        cur.close()
-        conn.close()
+    # finally:
+    #     cur.close()
+    #     conn.close()
 
 
 @app.route("/tweet/dislike", methods=["POST"])
@@ -165,9 +165,9 @@ def dislike():
     except Exception as e:
         pass
         return jsonify({'error': str(e)}), 500
-    finally:
-        conn.close()
-        cur.close()
+    # finally:
+    #     conn.close()
+    #     cur.close()
 
 # @app.route('/imagepicker/<filename>', methods=["GET"])
 # def serve_image(filename):
