@@ -140,7 +140,9 @@ async def logindb():
 
         cur.execute("""SELECT username , passwordacc , email FROM x_db WHERE email=%s""",
                     (confirmers.mail,))
+        
         result = cur.fetchone()
+        conn.commit()
         #--- This is to assign the username to the logged in one
         confirmers.username = result[0]
         confirmers.confirm_hash = result[1]
@@ -185,14 +187,15 @@ async def logindb():
             return jsonify({"Error":"Error in backendcodebase"}), 500
 
     except Exception as e:
-        return (f"fatal Error when selecting {e}")
+        return (f"fatal Error when selecting {str(e)}")
         # print("error")
 
     finally:
         try:
-            conn.commit()
+            cur.close()
+            conn.close()
         except Exception as cleanup_error:
-            return jsonify({"Error": f"{cleanup_error}"}), 500
+            return jsonify({"Error": f"{(str(cleanup_error))}"}), 500
 
 
 if __name__ == "__main__":
