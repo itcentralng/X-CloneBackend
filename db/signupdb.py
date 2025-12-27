@@ -172,6 +172,7 @@ def register():
         print("Mail: ", mail)
         print("date: ", date)
         
+        conn.commit()
 
         return jsonify({"status": "success", "username": confirmers.username, "email": confirmers.mail , "password": encryp_pass})
     
@@ -183,11 +184,11 @@ def register():
     except Exception as e:
         return jsonify({"error": f"Error from the tweet Backend: {str(e)}"}), 500
 
-    finally:
-        try:
-            conn.commit()
-        except Exception as error:
-            return jsonify({"Commit Error 500":"Back"}), 500
+    # finally:
+    #     try:
+            
+    #     except Exception as error:
+    #         return jsonify({"Commit Error 500":"Back"}), 500
   
 
 #--- I kept this for so i can use python command to run it ---
