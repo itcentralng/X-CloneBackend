@@ -187,6 +187,7 @@ def logindb():
             return jsonify({"Error":"Error in backendcodebase"}), 500
 
     except Exception as e:
+        conn.rollback()
         return (f"fatal Error when selecting {str(e)}")
         # print("error")
 
