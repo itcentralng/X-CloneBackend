@@ -55,7 +55,7 @@ from follow.notification import notification
 from mailsenpoint.mailsX import PasswordConfirm , PasswordRequest
 
 #--- This for the Model
-from models.dbMigrate import User , followtable , notificationmodel , tweets , like_table
+from models.dbMigrate import User , followtable , notificationmodel , tweets, like_table
 
 
 
@@ -107,8 +107,8 @@ def Post_tweet():
 
 @app.route("/tweet_list/<username>" , methods=["GET"])
 @token_required
-async def Get_tweet(username: str):
-    result = await tweet_list(username=username)
+def Get_tweet(username: str):
+    result = tweet_list(username=username)
     return result
 
 @app.route("/tweet/like" , methods=["POST"])

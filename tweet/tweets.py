@@ -42,6 +42,7 @@ def Posting_tweet():
         cur = conn.cursor()
         tweet_id = uuid.uuid4()
         data = request.get_json(cache=True)
+        username = data.get("username")
         tweeting = data.get("tweeting")
         tweetimage = data.get("tweetimage")
 
@@ -68,8 +69,14 @@ def Posting_tweet():
         #-- To set the dateTime when post was made
         posttime = datetime.datetime.now()
 
-        cur.execute("""INSERT INTO tweets VALUES(%s,%s,%s,%s)""", 
-                                (str(tweet_id),tweeting, posttime, tweetimage))
+        cur.execute("""INSERT INTO tweets(
+                            tweet_id,
+                            username,
+                            tweeting,
+                            posttime,
+                            tweetimage
+                        ) VALUES(%s,%s,%s,%s,%s)""", 
+                    (str(tweet_id),username,tweeting, posttime, tweetimage))
 
         conn.commit()
 
@@ -88,22 +95,28 @@ def Posting_tweet():
 
 
 @app.route("/tweet_list/<username>", methods=["GET"])
-async def tweet_list(username):
+def tweet_list(username):
     try:
         conn = get_Connection()
         cur = conn.cursor()
 
         limit_param = request.args.get("limit", default=10, type=int)
+        id = g.user_info['id']
 
         try:
             limits = int(limit_param)
         except (TypeError, ValueError):
             limits = 10
 
-        cur.execute("""SELECT username, tweets, tweet_id, posttime FROM tweets  WHERE username=%s order by tweet_id limit %s """,
-                    (username,limits,))
+        # cur.execute("""SELECT  tweets, tweet_id, posttime, tweetimage FROM tweets  WHERE username=%s order by tweet_id limit %s """,
+        #             ("backendteam",limits))
+
+        cur.execute("SELECT * FROM tweets where username = %s",(username,))
         results =  cur.fetchall()
-        return jsonify({"Results": results}), 200
+        conn.commit()
+        # return jsonify({"Results": results}), 200
+        return {"result": results, "username": username}
+
 
     except Exception as codeError:
         conn.rollback()

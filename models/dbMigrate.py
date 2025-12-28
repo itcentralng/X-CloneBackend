@@ -41,10 +41,12 @@ class notificationmodel(db_table.Model):
     time = db_table.Column(db_table.String(256),  nullable=False)
 
 
+###---- Could not drop this table so i created a new table
 class tweets(db_table.Model):
     __tablename__ = 'tweets'
     
-    tweet_id = db_table.Column(db_table.String,  nullable=False, primary_key=True)
+    tweet_id = db_table.Column(db_table.String,  nullable=False, primary_key=True) 
+    username = db_table.Column(db_table.String(256),  nullable=False , server_default="unknown")
     tweeting = db_table.Column(db_table.String(256),  nullable=False)
     posttime = db_table.Column(db_table.String(128),  nullable=False)
     tweetimage = db_table.Column(db_table.String(256))
