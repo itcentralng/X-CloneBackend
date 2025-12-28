@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 
 #-- This is for the getting the connection
 # from connection import connect_db
-
+from models.dbMigrate import User
 
 load_dotenv()
 
@@ -27,6 +27,7 @@ app.config['SECRET_KEY'] = str(os.getenv("SECRET_KEY"))
 #-- This is for the getting the connection
 
 from connection.connect_db import get_Connection
+from index import db_table
 conn =  get_Connection()
     
 
@@ -138,14 +139,21 @@ def logindb():
     try:
         print("Email",confirmers.mail)
 
-        cur.execute("""SELECT username , passwordacc , email FROM x_db WHERE email=%s""",
-                    (confirmers.mail,))
+        # cur.execute("""SELECT username , passwordacc , email FROM x_db WHERE email=%s""",
+        #             (confirmers.mail,))
         
-        result = cur.fetchone()
-        conn.commit()
+        # result = cur.fetchone()
+
+        user = db_table.session.query(
+            User.username,
+            User.passwordacc,
+            User.email
+        ).filter(User.email == confirmers.mail).first()
+
+        # conn.commit()
         #--- This is to assign the username to the logged in one
-        confirmers.username = result[0]
-        confirmers.confirm_hash = result[1]
+        confirmers.username = user[0]
+        confirmers.confirm_hash = user[1]
 
         token = jwt.encode({
                             'email': confirmers.mail, 
@@ -169,19 +177,18 @@ def logindb():
         password_match = bcrypt.check_password_hash(pw_hash=confirmers.confirm_hash , password=confirmers.password_confirm)
 
         # print("Hashed Password: ", confirmers.confirm_hash)
-        if result and password_match:
+        if user and password_match:
             return {
                     'user':{
-                    'username':result[0],
-                    'email': result[2], 
+                    'username':user[0],
+                    'email': user[2], 
                     },
                     'Welcome Back':200,
                     'token':token,
                    }
-
-        elif not result or not password_match:
+        elif not user or not password_match:
             return jsonify({"Error":"Wrong User Infomation"}),404
-        elif not result:
+        elif not user:
             return jsonify({"Error":"User not found"}),500
         else :
             return jsonify({"Error":"Error in backendcodebase"}), 500

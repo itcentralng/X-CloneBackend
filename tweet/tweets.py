@@ -10,6 +10,9 @@ from dotenv import load_dotenv
 #-- This is for the getting the connection
 from connection.connect_db import get_Connection
 
+from index import db_table
+from models.dbMigrate import tweets , like_table 
+
 import datetime
 load_dotenv()
 
@@ -69,16 +72,16 @@ def Posting_tweet():
         #-- To set the dateTime when post was made
         posttime = datetime.datetime.now()
 
-        cur.execute("""INSERT INTO tweets(
-                            tweet_id,
-                            username,
-                            tweeting,
-                            posttime,
-                            tweetimage
-                        ) VALUES(%s,%s,%s,%s,%s)""", 
-                    (str(tweet_id),username,tweeting, posttime, tweetimage))
+        tweetin = tweets(
+            tweet_id=str(tweet_id),
+            username=username,
+            tweeting=tweeting,
+            posttime=posttime,
+            tweetimage=tweetimage
+        )
 
-        conn.commit()
+        db_table.session.add(tweetin)
+        db_table.session.commit()
 
         return jsonify({"Post":f"{str(tweeting)}" , "time":f"{str(posttime)}", "image_url":tweetimage, "tweet_id":str(tweet_id)}), 200
 
@@ -88,10 +91,6 @@ def Posting_tweet():
     except Exception as e:
          conn.rollback()
          return jsonify({"error": f"Error from the tweet Backend: {str(e)}"}), 500
-    # finally:
-    #     if cur: cur.close()
-    #     if conn: conn.close() 
-    
 
 
 @app.route("/tweet_list/<username>", methods=["GET"])
@@ -108,23 +107,30 @@ def tweet_list(username):
         except (TypeError, ValueError):
             limits = 10
 
-        # cur.execute("""SELECT  tweets, tweet_id, posttime, tweetimage FROM tweets  WHERE username=%s order by tweet_id limit %s """,
-        #             ("backendteam",limits))
+        tweetin = db_table.session.query(
+            tweets.tweet_id,
+            tweets.username,
+            tweets.tweeting,
+            tweets.posttime,
+            tweets.tweetimage,
 
-        cur.execute("SELECT * FROM tweets where username = %s",(username,))
-        results =  cur.fetchall()
-        conn.commit()
-        # return jsonify({"Results": results}), 200
-        return {"result": results, "username": username}
+        ).filter(tweets.username == username).order_by(tweets.posttime.desc()).limit(limits).all()
 
+        return jsonify([
+                        {
+                            "tweet_id": t.tweet_id,
+                            "username": t.username,
+                            "tweeting": t.tweeting,
+                            "posttime": t.posttime,
+                            "tweetimage": t.tweetimage
+                        }
+                        for t in tweetin
+                    ]), 200
 
     except Exception as codeError:
         conn.rollback()
         return jsonify({"Error: ": f"{codeError}"}), 500
-    # finally:
-    #     cur.close()
-    #     conn.close() 
-
+    
 
 @app.route("/tweet/like" , methods=["POST"])
 def like():
@@ -139,14 +145,14 @@ def like():
         conn = get_Connection()
         cur = conn.cursor()
 
-        # Insert or update like record
-        cur.execute("""
-            INSERT INTO like_table (user_id, tweet_id)
-            VALUES (%s, %s)
-        """, (str(user_id), tweet_id))
-        conn.commit()
+        liking = like_table(
+            user_id=user_id,
+            tweet_id=tweet_id
+        )
 
-        
+        db_table.session.add(liking)
+        db_table.session.commit()
+
         return jsonify({'message': 'Item liked successfully'}), 200
 
     except psycopg2.IntegrityError as error:
@@ -156,11 +162,9 @@ def like():
 
     except Exception as e:
         conn.rollback()
+        if "(psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint" in str(e):
+            return jsonify({"message": "Tweet liked already"}), 500
         return jsonify({'error': str(e)}), 500
-    # finally:
-    #     cur.close()
-    #     conn.close()
-
 
 @app.route("/tweet/dislike", methods=["POST"])
 def dislike(): 
@@ -174,12 +178,17 @@ def dislike():
 
     try:
         conn = get_Connection()
-        cur = conn.cursor()
-        cur.execute("""DELETE FROM like_table where user_id =%s AND tweet_id =%s """, (str(user_id), tweet_id))
-        conn.commit()
+        
+        disliking = like_table.query.filter_by(
+            user_id=user_id,
+            tweet_id=tweet_id
+        ).first()
 
-        if 'conn' in locals() and conn:
-            conn.rollback()
+        if not disliking:
+            return jsonify({"error": "Like not found"}), 404
+
+        db_table.session.delete(disliking)
+        db_table.session.commit()
 
         return jsonify({'message': 'Dislike recorded'}), 200
     
@@ -187,9 +196,7 @@ def dislike():
     except Exception as e:
         conn.rollback()
         return jsonify({'error': str(e)}), 500
-    # finally:
-    #     conn.close()
-    #     cur.close()
+
 
 # @app.route('/imagepicker/<filename>', methods=["GET"])
 # def serve_image(filename):
