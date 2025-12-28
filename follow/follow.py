@@ -2,6 +2,8 @@ from flask import Flask, g , jsonify , request
 
 from connection.connect_db import get_Connection
 from psycopg2.errors import UniqueViolation
+from index import db_table
+from models.dbMigrate import followtable
 
 app = Flask(__name__)
 
@@ -18,17 +20,15 @@ def following():
         if not follower_id:
             return jsonify({"error": "Missing 'follower_id' in request body"}), 400
 
+        followein = followtable(
+            id=user_id,
+            follower_id = follower_id
+        )
+
+        db_table.session.add(followein)
+        db_table.session.commit()
         
-
-        cur.execute("INSERT INTO follow_table values (%s , %s)", (user_id , follower_id))
-
-        conn.commit()
-        # print(f"This is results {cur.rowcount > 0}")
-
-        if cur.rowcount > 0:
-            return jsonify({"Result": "successfull"}), 200
-        elif not cur.rowcount < 0:
-            return jsonify({"Error"}), 404
+        return jsonify({"Result": "successfull"}), 200
 
     except UniqueViolation as e:
         errormessage: str = str(e)
@@ -44,6 +44,8 @@ def following():
         }), 400
     except Exception as error:
         conn.rollback()
+        if "(psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint" in str(error):
+            return jsonify({"message": "Following user already"}), 500
         return jsonify({"Error": str(error)}), 500
 
     # finally:
@@ -62,15 +64,19 @@ def Unfollow():
         conn = get_Connection()
         cur = conn.cursor()
 
-        executed = cur.execute("DELETE FROM follow_table WHERE id = %s AND follower_id = %s" ,
-                (str(user_id), str(followe_id)))
-        print(f"Row deleted: {cur.rowcount}")
+        unfollowing = followtable.query.filter_by(
+            id=user_id,
+            follower_id=followe_id
+        ).first()
 
-        conn.commit()
-        # if executed:
-        #     return {"message": "Unfollow sucessfull"}, 200
-        # elif not executed:
-        #     return {"meesage":"Unfollow Unsuccessfull"}, 404
+        if not unfollowing:
+            return jsonify({"error": "Follow not found"}), 404
+
+        db_table.session.delete(unfollowing)
+        db_table.session.commit()
+
+        if not unfollowing:
+            return {"message":"Unfollow Unsuccessfull"}, 404
 
         return {"message": "Unfollow sucessfull"}, 200
     except UniqueViolation as e:

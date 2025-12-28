@@ -4,6 +4,8 @@ import psycopg2
 
 app = Flask(__name__)
 from connection.connect_db import get_Connection
+from index import db_table
+from models.dbMigrate import notificationmodel
 
 @app.route("/notification", methods=["GET"])
 def notification():
@@ -19,15 +21,16 @@ def notification():
         # read = data.get("donereading")
 
 
+        notify = notificationmodel(
+            id=user_id,
+            message=message,
+            category=catigory,
+            time=str(datetime.datetime.now())
+        )
+        db_table.session.add(notify)
+        db_table.session.commit()
 
-        cur.execute("INSERT INTO notification values(%s, %s , %s, %s)", 
-                                    (str(user_id),message,catigory,str(datetime.datetime.now())));
-        conn.commit()
-
-        if cur.rowcount +1:
-            return jsonify({"message":"Notification added"}), 200
-        else:
-            return jsonify({"message":"error from the adding"}), 404
+        return jsonify({"message":"Notification added"}), 200
         
     except psycopg2.IntegrityError as error:
         conn.rollback()
@@ -35,6 +38,8 @@ def notification():
 
     except Exception as error:
         conn.rollback()
+        if "(psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint" in str(error):
+            return jsonify({"message": "Notification already added"}), 500
         return jsonify({"error":f"Internal Error: {str(error)}"}) , 500
     # finally:
     #     cur.close()

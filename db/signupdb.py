@@ -19,6 +19,11 @@ from flask_bcrypt import Bcrypt
 
 from connection.connect_db import get_Connection
 
+#--- This is the session for auth signing up
+from models.dbMigrate import User
+
+from index import db_table
+
 import uuid
 conn = get_Connection()
 
@@ -120,54 +125,32 @@ def register():
         return {"Sorry your username is null": 310}
     elif confirmers.mail == "":
         return {"Sorry your Email is null": 311}
-    # elif confirmers.password_confirm == "":
-    #     return {"Sorry your Password is null": 312}
-    
-
-        ##--- This is for the image section
-    # profile_url=[]
-    # cover_url=[]
-    # for file in request.files.getlist('profileimage'):
-    #     # If the user does not select a file, the browser submits an
-    #     # empty file without a filename.
-    #     if file.filename == '':
-    #         flash('No selected file')
-    #         # return jsonify({"Message":"Sorry no selected file"}), 400
-    #         continue
-        
-    #     if file and allowed_file(file.filename):
-    #         filename = secure_filename(file.filename)
-    #         save_path = os.path.join(app.config['UPLOAD_FOLDER_PROFILE'], filename)
-    #         file.save(save_path)
-    #         profile_url.append(f"/profile/{filename}")
-
-    # for file in request.files.getlist('coverimage'):
-    #     # If the user does not select a file, the browser submits an
-    #     # empty file without a filename.
-    #     if file.filename == '':
-    #         flash('No selected file')
-    #         # return jsonify({"Message":"Sorry no selected file"}), 400
-    #         continue
-        
-    #     if file and allowed_file(file.filename):
-    #         filename = secure_filename(file.filename)
-    #         save_path = os.path.join(app.config['UPLOAD_FOLDER_COVER'], filename)
-    #         file.save(save_path)
-    #         cover_url.append(f"/coverimage/{filename}")
-
 
     try:
         
         mail = confirmers.mail
-        cur.execute("""INSERT INTO x_db (id , username , email, dob , passwordacc, profileimage, coverimage)
-                    VALUES (%s , %s , %s , %s , %s, %s, %s) """, 
-                    (random_id , confirmers.username ,mail , inpdate , encryp_pass, profile_url, cover_url))
+        # cur.execute("""INSERT INTO x_db (id , username , email, dob , passwordacc, profileimage, coverimage)
+        #             VALUES (%s , %s , %s , %s , %s, %s, %s) """, 
+        #             (random_id , confirmers.username ,mail , inpdate , encryp_pass, profile_url, cover_url))
+
+        new_user = User(
+            id=random_id,
+            username=confirmers.username,
+            email=mail,
+            dob=inpdate,
+            passwordacc=encryp_pass,
+            profileimage=profile_url,
+            coverimage=cover_url
+        )
+
+        db_table.session.add(new_user)
+        db_table.session.commit()
 
         print("Username:", confirmers.username)
         print("Mail: ", mail)
         print("date: ", date)
         
-        conn.commit()
+        # conn.commit()
 
         return jsonify({"status": "success", "username": confirmers.username, "email": confirmers.mail , "password": encryp_pass})
     
@@ -182,6 +165,8 @@ def register():
         ok, msg = emailchecker(inpemail)
         if not ok:
             return jsonify({"message": str(msg)}), 500
+        if "(psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint" in str(e):
+            return jsonify({"message": "User Email Exist Already"}), 500
         return jsonify({"error": f"Error from the tweet Backend: {str(e)}"}), 500
 
     # finally:
