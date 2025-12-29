@@ -90,10 +90,17 @@ def token_required(f):
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
             email = data.get('email')
         
-            curr = conn.cursor()
-            curr.execute("""SELECT * FROM x_db WHERE email=%s""" , 
-                         (email,))
-            user_row = curr.fetchone()
+            # curr = conn.cursor()
+            # curr.execute("""SELECT * FROM x_db WHERE email=%s""" , 
+            #              (email,))
+            # user_row = curr.fetchone()
+
+            user_row = db_table.session.query(
+                User.id,
+                User.username,
+                User.email,
+            ).filter(User.email == email).first()
+           
             
             #--- This is to get the payload and give it to jwt
             user_info={
