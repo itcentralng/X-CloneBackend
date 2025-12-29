@@ -16,8 +16,8 @@ from flask_bcrypt import Bcrypt
 # from connection import 
 
 #-- This is for the getting the connection
+# from connection.connect_db import get_Connection
 
-from connection.connect_db import get_Connection
 
 #--- This is the session for auth signing up
 from models.dbMigrate import User
@@ -25,7 +25,6 @@ from models.dbMigrate import User
 from index import db_table
 
 import uuid
-conn = get_Connection()
 
 load_dotenv()
 
@@ -99,10 +98,6 @@ def passwordcheck(password_check: str):
 @app.route("/register" , methods=["POST"])
 def register():
 
-    connect = conn
-    
-    cur = connect.cursor()
-
     data = request.get_json(cache=True)
     inpusername = data.get("username")
     inpdate = str(data.get("dataofbirth"))
@@ -155,13 +150,13 @@ def register():
         return jsonify({"status": "success", "username": confirmers.username, "email": confirmers.mail , "password": encryp_pass})
     
     except psycopg2.IntegrityError as error:
-        conn.rollback()
+        db_table.session.rollback()
         if "duplicate key value violates unique constraint" in str(error):
             return jsonify({"message": "User Email Exist Already"}), 500
         else :
             return jsonify({"error": f"Database integrity error: {str(error)}"}), 400
     except Exception as e:
-        conn.rollback()
+        db_table.session.rollback()
         ok, msg = emailchecker(inpemail)
         if not ok:
             return jsonify({"message": str(msg)}), 500
