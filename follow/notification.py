@@ -3,15 +3,13 @@ import datetime
 import psycopg2
 
 app = Flask(__name__)
-from connection.connect_db import get_Connection
+# from connection.connect_db import get_Connection
 from index import db_table
 from models.dbMigrate import notificationmodel
 
 @app.route("/notification", methods=["GET"])
 def notification():
     try:
-        conn = get_Connection()
-        cur = conn.cursor()
 
         # ---The front-end team will pass the notification form the button clicked sir
         data = request.get_json()
@@ -33,11 +31,11 @@ def notification():
         return jsonify({"message":"Notification added"}), 200
         
     except psycopg2.IntegrityError as error:
-        conn.rollback()
+        db_table.session.rollback()
         return jsonify({"error": "Nofication already added", "reason": str(error)}), 400
 
     except Exception as error:
-        conn.rollback()
+        db_table.session.rollback()
         if "(psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint" in str(error):
             return jsonify({"message": "Notification already added"}), 500
         return jsonify({"error":f"Internal Error: {str(error)}"}) , 500

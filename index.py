@@ -59,10 +59,10 @@ from models.dbMigrate import User , followtable , notificationmodel , tweets, li
 
 
 
-from connection.connect_db import get_Connection
+# from connection.connect_db import get_Connection
 
-conn = get_Connection()
-cur = conn.cursor()
+# conn = get_Connection()
+# cur = conn.cursor()
 
 @app.route("/" , methods=["GET"])
 async def Welcome():
@@ -156,8 +156,8 @@ def password_confirm():
 @token_required
 def user():
     try:
-        cur.execute("""SELECT * FROM x_db""")
-        users = cur.fetchall()
+        db_table.session.execute("""SELECT * FROM x_db""")
+        users = db_table.session.fetchall()
         return jsonify({"users": dict(users)})
     except psycopg2.Error as e:
         return {"error": str(e)}
@@ -173,9 +173,9 @@ def me():
         jwt_token = auth_header.split()[1]
         payload = jwt.decode(jwt_token,app.config['SECRET_KEY'],algorithms=['HS256'])
         email = payload['email']
-        cur.execute("SELECT * FROM x_db WHERE email = %s",(email,))
-        user = cur.fetchone()
-        
+        db_table.session.execute("SELECT * FROM x_db WHERE email = %s",(email,))
+        user = db_table.session.fetchone()
+
     return jsonify({'User_Info':dict(user)})
 
 #WEEK5 & 7 Attahir 
@@ -189,16 +189,16 @@ def list_tweet(tweet):
     user_id = data["user_id"]
     liked_status = False
     try:
-        cur.execute("SELECT * FROM tweets WHERE tweet_id = %s",(tweet,))
-        my_tweet = cur.fetchone()
+        db_table.session.execute("SELECT * FROM tweets WHERE tweet_id = %s",(tweet,))
+        my_tweet = db_table.session.get_one()
                                 #(username,tweets,t_id,time)
         if my_tweet is None:
             return jsonify({"error":"Tweet Not Found"}),404
     except Exception as e:
         return jsonify({"Error":"Database Error","Details":str(e)}),500
     try:
-        cur.execute("SELECT * FROM likes_table WHERE tweet_id = %s",(tweet,))
-        tweet_like = cur.fetchone()
+        db_table.session.execute("SELECT * FROM likes_table WHERE tweet_id = %s",(tweet,))
+        tweet_like = db_table.session.get_one()
                                 #(tweet_id,users_liked,id)
         if tweet_like is not None:
             users_liked = tweet_like[1]
@@ -218,8 +218,8 @@ def following_id(id):
     except ValueError:
         return jsonify({"error":"invalid User id"})
     try:
-        cur.execute("SELECT COUNT(following_id) FROM follow_table WHERE users_id = %s",(user_id,))
-        data = cur.fetchone()
+        db_table.session.execute("SELECT COUNT(following_id) FROM follow_table WHERE users_id = %s",(user_id,))
+        data = db_table.session.get_one()
         if data is None:
             return jsonify({"error User id not found"}),404
         following = user[0]
@@ -233,8 +233,8 @@ def followers_id(id):
     except ValueError:
         return jsonify({"error":"invalid User id"})
     try:
-        cur.execute("SELECT COUNT(follwers_id) FROM follow_table WHERE users_id = %s",(user_id,))
-        data = cur.fetchone()
+        db_table.session.execute("SELECT COUNT(followers_id) FROM follow_table WHERE users_id = %s",(user_id,))
+        data = db_table.session.get_one()
         if data is None:
             return jsonify({"error User id not found"}),404
         followers = user[0]
@@ -254,13 +254,13 @@ def get_image(id):
 @app.route('/notification/read')
 def not_read():
     try:
-        cur.execute("SELECT from notification values WHERE read = 1")
-        data = cur.fetchall()
+        db_table.session.execute("SELECT * FROM notification WHERE read = 1")
+        data = db_table.session.get_one()
         return jsonify({"notifications_read":dict(data)})
     except Exception as e:
         return jsonify({"Error":"Database Error","Details":str(e)}),500
-cur.close()
-conn.close()
+
+
 # --- I put this back so i can run it with python so i can be reloading
 # --- If run flask --app (py) run it won't be reloading if their are any changes in the code
 

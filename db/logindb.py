@@ -25,10 +25,9 @@ app.config['SECRET_KEY'] = str(os.getenv("SECRET_KEY"))
 
 
 #-- This is for the getting the connection
+# from connection.connect_db import get_Connection
 
-from connection.connect_db import get_Connection
 from index import db_table
-conn =  get_Connection()
     
 
 class Confirmers():
@@ -123,7 +122,6 @@ def token_required(f):
 @app.route("/login" , methods=["POST"])
 def logindb():
 
-    cur = conn.cursor()
     data = request.get_json(force=True, cache=True )
 
     #--- To get the values of email and password
@@ -194,7 +192,7 @@ def logindb():
             return jsonify({"Error":"Error in backendcodebase"}), 500
 
     except Exception as e:
-        conn.rollback()
+        db_table.session.rollback()
         return (f"fatal Error when selecting {str(e)}")
         # print("error")
 

@@ -8,7 +8,7 @@ from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
 #-- This is for the getting the connection
-from connection.connect_db import get_Connection
+# from connection.connect_db import get_Connection
 
 from index import db_table
 from models.dbMigrate import tweets , like_table 
@@ -37,12 +37,9 @@ def allowed_file(filename):
 
 @app.route("/tweet/create" , methods=["POST"])
 def Posting_tweet():
-    conn = None
-    cur = None
+    
     try:
-        conn = get_Connection()
-
-        cur = conn.cursor()
+        
         tweet_id = uuid.uuid4()
         data = request.get_json(cache=True)
         username = data.get("username")
@@ -86,18 +83,16 @@ def Posting_tweet():
         return jsonify({"Post":f"{str(tweeting)}" , "time":f"{str(posttime)}", "image_url":tweetimage, "tweet_id":str(tweet_id)}), 200
 
     except psycopg2.IntegrityError as error:
-         conn.rollback()
-         return jsonify({"error": str(error)}), 400
+        db_table.session.rollback()
+        return jsonify({"error": str(error)}), 400
     except Exception as e:
-         conn.rollback()
-         return jsonify({"error": f"Error from the tweet Backend: {str(e)}"}), 500
+        db_table.session.rollback()
+        return jsonify({"error": f"Error from the tweet Backend: {str(e)}"}), 500
 
 
 @app.route("/tweet_list/<username>", methods=["GET"])
 def tweet_list(username):
     try:
-        conn = get_Connection()
-        cur = conn.cursor()
 
         limit_param = request.args.get("limit", default=10, type=int)
         id = g.user_info['id']
@@ -128,7 +123,7 @@ def tweet_list(username):
                     ]), 200
 
     except Exception as codeError:
-        conn.rollback()
+        db_table.session.rollback()
         return jsonify({"Error: ": f"{codeError}"}), 500
     
 
@@ -142,8 +137,6 @@ def like():
         return jsonify({'error': 'Missing user_id or item_id'}), 400
 
     try:
-        conn = get_Connection()
-        cur = conn.cursor()
 
         liking = like_table(
             user_id=user_id,
@@ -156,12 +149,12 @@ def like():
         return jsonify({'message': 'Item liked successfully'}), 200
 
     except psycopg2.IntegrityError as error:
-        conn.rollback()
+        db_table.session.rollback()
         if "duplicate key value violates unique constraint" in str(error):
             return jsonify({"error": "User has already liked this tweet"}), 400
 
     except Exception as e:
-        conn.rollback()
+        db_table.session.rollback()
         if "(psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint" in str(e):
             return jsonify({"message": "Tweet liked already"}), 500
         return jsonify({'error': str(e)}), 500
@@ -177,7 +170,6 @@ def dislike():
         return jsonify({'error': 'Missing post_id or user_id'}), 400
 
     try:
-        conn = get_Connection()
         
         disliking = like_table.query.filter_by(
             user_id=user_id,
@@ -194,7 +186,7 @@ def dislike():
     
 
     except Exception as e:
-        conn.rollback()
+        db_table.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 

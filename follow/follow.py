@@ -1,6 +1,6 @@
 from flask import Flask, g , jsonify , request
 
-from connection.connect_db import get_Connection
+# from connection.connect_db import get_Connection
 from psycopg2.errors import UniqueViolation
 from index import db_table
 from models.dbMigrate import followtable
@@ -10,8 +10,7 @@ app = Flask(__name__)
 @app.route("/follow" , methods=["POST"])
 def following():
 
-    conn = get_Connection()
-    cur = conn.cursor()
+
     try:
         data = request.get_json() or {}
         user_id = g.user_info['id']
@@ -43,14 +42,11 @@ def following():
             "detail": errormessage  # convert exception to string
         }), 400
     except Exception as error:
-        conn.rollback()
+        db_table.session.rollback()
         if "(psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint" in str(error):
             return jsonify({"message": "Following user already"}), 500
         return jsonify({"Error": str(error)}), 500
 
-    # finally:
-    #     conn.close()
-    #     cur.close()
 
 @app.route("/unfollow", methods=["POST"])
 def Unfollow():
@@ -60,9 +56,6 @@ def Unfollow():
         followe_id = data.get("followe_id")
 
         print('attr:', user_id  , followe_id)
-
-        conn = get_Connection()
-        cur = conn.cursor()
 
         unfollowing = followtable.query.filter_by(
             id=user_id,
@@ -80,7 +73,7 @@ def Unfollow():
 
         return {"message": "Unfollow sucessfull"}, 200
     except UniqueViolation as e:
-        conn.rollback()
+        db_table.session.rollback()
         errormessage: str = str(e)
         
         
@@ -89,9 +82,7 @@ def Unfollow():
             "detail": errormessage  # convert exception to string
         }), 400
     except Exception as error:
-        conn.rollback()
+        db_table.session.rollback()
         return jsonify({"Error": str(error)}) , 500
-    # finally:
-    #     conn.close()
-    #     cur.close()
+
 
