@@ -1,6 +1,7 @@
 from flask import Flask, g , jsonify , request
 
 # from connection.connect_db import get_Connection
+
 from psycopg2.errors import UniqueViolation
 from index import db_table
 from models.dbMigrate import followtable
@@ -9,7 +10,6 @@ app = Flask(__name__)
 
 @app.route("/follow" , methods=["POST"])
 def following():
-
 
     try:
         data = request.get_json() or {}
@@ -21,7 +21,7 @@ def following():
 
         followein = followtable(
             id=user_id,
-            follower_id = follower_id
+            follower_id=follower_id
         )
 
         db_table.session.add(followein)
