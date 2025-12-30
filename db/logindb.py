@@ -200,8 +200,9 @@ def logindb():
 
     except Exception as e:
         db_table.session.rollback()
-        return (f"fatal Error when selecting {str(e)}")
-        # print("error")
+        if "object is not subscriptable" in str(e):
+            return ({"Error": "Invalid data format", "message":"User Not found"}), 400
+        return (f"fatal Error when selecting {str(e)}"), 500
 
     # finally:
         # try:
