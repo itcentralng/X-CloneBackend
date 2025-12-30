@@ -42,7 +42,7 @@ from db.signupdb import register
 from db.logindb import logindb , token_required
 
 #---- This is to get hold of the profile section
-from users.users_profile import profile_fetch
+from users.users_profile import profile_fetch , updateProfile
 
 #--- This is to run the tweets endpoint in index
 from tweet.tweets import Posting_tweet, tweet_list, like, dislike
@@ -90,14 +90,19 @@ def login():
     return result
 
 #--- This is for the profile route
-@app.route("/profile/<username>" , methods=["GET", "PATCH"])
+#--- This is to updated the user profile details throught the email
+@app.route("/updateprofile/<email>" , methods=["GET", "PATCH"])
 @token_required
-def profile(username: str):
-    if request.method == "GET":
-        return profile_fetch(username=username)
-    elif request.method == "PATCH":
-        return profile_fetch(username=username)
-
+def profile(email: str):
+    if request.method == "PATCH":
+        return updateProfile(email=email)
+    
+#--- This is to fetch the user profile through the user profile 
+#--- Made use of the id of the user instead of putting user name and stuff
+@app.route("/userprofile" , methods=["GET"])
+@token_required
+def user_profile():
+    return profile_fetch()
 
 @app.route("/tweet/create" , methods=["POST"])
 @token_required
