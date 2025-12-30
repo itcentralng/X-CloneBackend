@@ -29,7 +29,7 @@ mail = Mail(app)
 
 
 @app.route("/resetpassword/confirm", methods=["POST"])
-async def PasswordRequest():
+def PasswordRequest():
     
     data = request.get_json()
     email = data.get("email")

@@ -1,7 +1,8 @@
-from flask import Flask , request , jsonify
+from flask import Flask , request , jsonify , g
 import psycopg2
 import os
 from dotenv import load_dotenv
+from sqlalchemy.exc import IntegrityError
 
 app = Flask(__name__)
 load_dotenv()
@@ -15,15 +16,14 @@ load_dotenv()
 from index import db_table
 from models.dbMigrate import User
 
-@app.route("/profile/<username>", methods=["GET", "PATCH"])
-def profile_fetch(username):
 
-    # cur = db_table.cursor()
-
+@app.route("/userprofile", methods=["GET", "PATCH"])
+def profile_fetch():
     try:
 
         #----- THIS IS TO GET THE USERS THAT EXIST
         if request.method == "GET":
+            id = g.user_info['id']
 
             user_data = db_table.session.query(
                     User.id,
@@ -32,7 +32,7 @@ def profile_fetch(username):
                     User.dob,
                     User.profileimage
                 ).filter(
-                    User.username == username
+                    User.id == id
                 ).first()
 
             if user_data:
@@ -53,66 +53,69 @@ def profile_fetch(username):
                 dob = data.get("dob")
                 profileimage = data.get("profileimage")
 
-                updated = (
-                    User.query
-                    .filter(User.username == username)
-                    .update({
-                        User.username: username,
-                        User.email: email,
-                        User.dob: dob,
-                        User.profileimage: profileimage
-                    }, synchronize_session=False)
-                )
-
-                db_table.session.commit()
-
-                if updated == 0:
+                user = db_table.session.query(User).filter_by(email=email).first()
+                if not user:
                     return jsonify({"status":"failed", "message":"User not found"}), 404
-                
+
+                # update only fields provided
+                if email is not None:
+                    user.email = email
+                if dob is not None:
+                    user.dob = dob
+                if profileimage is not None:
+                    user.profileimage = profileimage
+
+                try:
+                    db_table.session.commit()
+                except IntegrityError as e:
+                    db_table.session.rollback()
+                    return jsonify({"status":"failed", "message":"Integrity error", "reason": str(e)}), 409
+
                 return jsonify({"status":"success", "message":"Profile updated"}), 200
-    except psycopg2.Error as e:
+
+    except psycopg2.errors.UniqueViolation as e:
         db_table.session.rollback()
         return jsonify({"reason": str(e)}, 404)
     except Exception as error:
         db_table.session.rollback()
-        return jsonify({f"Fatal error at back {error}"}, 500)
+        return jsonify({f"Fatal error at back {str(error)}"}, 500)
 
 
-# @app.route("/profileupdate/<username>", methods=["PATCH"])
-# def updateProfile(username):
+@app.route("/profileupdate/<email>", methods=["PATCH"])
+def updateProfile(email):
 
-#     try:
+    try:
+        data = request.get_json()
+        username = data.get("username")
+        updatemail = data.get("email")
+        dob = data.get("dob")
+        profileimage = data.get("profileimage")
 
-#         data = request.get_json()
-#         email = data.get("email")
-#         dob = data.get("dob")
-#         profileimage = data.get("profileimage")
 
-#         query = db_table.session.query(
-#                 User
-#             ).filter(
-#                 User.username == username
-#             ).first()
+        updated = User.query.filter(User.email == email).update({
+            User.username: username,
+            User.email: updatemail,
+            User.dob: dob,
+            User.profileimage: profileimage
+        }, synchronize_session=False)
 
-#         db_table.session.update({
-#             User.email: email,
-#             User.dob: dob,
-#             User.profileimage: profileimage
-#         }, synchronize_session=False)
+        if updated == 0:
+            return jsonify({"status":"failed", "message":"User not found"}), 404
 
-#         db_table.session.commit()
+        try:
+            db_table.session.commit()
+        except IntegrityError as e:
+            db_table.session.rollback()
+            return jsonify({"status":"failed", "message":"Integrity error", "reason": str(e)}), 409
 
-#         if query.first() is None:
-#             return jsonify({"status":"failed", "message":"User not found"}), 404
-        
-#         return jsonify({"status":"success", "message":"Profile updated"}), 200
+        return jsonify({"status":"success", "message":"Profile updated"}), 200
 
-    # except psycopg2.Error as e:
-    #     db_table.session.rollback()
-    #     return jsonify({"reason": str(e)}, 404)
-    # except Exception as error:
-    #     db_table.session.rollback()
-    #     return jsonify({f"Fatal error at back {error}"}, 500)
+    except psycopg2.Error as e:
+        db_table.session.rollback()
+        return jsonify({"reason": str(e)}) , 404
+    except Exception as error:
+        db_table.session.rollback()
+        return jsonify({f"Fatal error at back {str(error)}"}),500
 
 if __name__ == "__main__":
     #--- To get the port 
