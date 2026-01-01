@@ -126,6 +126,43 @@ def tweet_list(username):
         db_table.session.rollback()
         return jsonify({"Error: ": f"{codeError}"}), 500
     
+@app.route("/personaltweet" , methods=["GET"])
+def personalTweet():
+    try:
+
+        limit_param = request.args.get("limit", default=10, type=int)
+        id = g.user_info['id']
+
+        try:
+            limits = int(limit_param)
+        except (TypeError, ValueError):
+            limits = 10
+
+        tweetin = db_table.session.query(
+            tweets.tweet_id,
+            tweets.username,
+            tweets.tweeting,
+            tweets.posttime,
+            tweets.tweetimage,
+
+        ).filter(tweets.id == id).order_by(tweets.posttime.desc()).limit(limits).all()
+
+        return jsonify([
+                        {
+                            "tweet_id": t.tweet_id,
+                            "username": t.username,
+                            "tweeting": t.tweeting,
+                            "posttime": t.posttime,
+                            "tweetimage": t.tweetimage
+                        }
+                        for t in tweetin
+                    ]), 200
+
+    except Exception as codeError:
+        db_table.session.rollback()
+        return jsonify({"Error: ": f"{codeError}"}), 500
+    
+    
 
 @app.route("/tweet/like" , methods=["POST"])
 def like():
@@ -158,6 +195,7 @@ def like():
         if "(psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint" in str(e):
             return jsonify({"message": "Tweet liked already"}), 500
         return jsonify({'error': str(e)}), 500
+
 
 @app.route("/tweet/dislike", methods=["POST"])
 def dislike(): 

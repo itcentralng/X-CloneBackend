@@ -45,7 +45,7 @@ from db.logindb import logindb , token_required
 from users.users_profile import profile_fetch , updateProfile
 
 #--- This is to run the tweets endpoint in index
-from tweet.tweets import Posting_tweet, tweet_list, like, dislike
+from tweet.tweets import Posting_tweet, tweet_list, personalTweet ,like, dislike
 
 #--- This is for the notification of x and follow
 from follow.follow import following, Unfollow
@@ -114,6 +114,12 @@ def Post_tweet():
 @token_required
 def Get_tweet(username: str):
     result = tweet_list(username=username)
+    return result
+
+@app.route("/personaltweet" , methods=["GET"])
+@token_required
+def Get_personal_tweet():
+    result = personalTweet()
     return result
 
 @app.route("/tweet/like" , methods=["POST"])
