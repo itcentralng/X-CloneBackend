@@ -81,8 +81,10 @@ def profile_fetch():
         return jsonify({f"Fatal error at back {str(error)}"}, 500)
 
 
-@app.route("/profileupdate/<email>", methods=["PATCH"])
-def updateProfile(email):
+@app.route("/profileupdate", methods=["PATCH"])
+def updateProfile():
+
+    id = g.user_info['id']
 
     try:
         data = request.get_json()
@@ -92,7 +94,7 @@ def updateProfile(email):
         profileimage = data.get("profileimage")
 
 
-        updated = User.query.filter(User.email == email).update({
+        updated = User.query.filter(User.id == id).update({
             User.username: username,
             User.email: updatemail,
             User.dob: dob,
