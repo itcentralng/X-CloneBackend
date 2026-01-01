@@ -91,11 +91,11 @@ def login():
 
 #--- This is for the profile route
 #--- This is to updated the user profile details throught the email
-@app.route("/updateprofile/<email>" , methods=["GET", "PATCH"])
+@app.route("/updateprofile" , methods=["GET", "PATCH"])
 @token_required
-def profile(email: str):
+def profile():
     if request.method == "PATCH":
-        return updateProfile(email=email)
+        return updateProfile()
     
 #--- This is to fetch the user profile through the user profile 
 #--- Made use of the id of the user instead of putting user name and stuff
