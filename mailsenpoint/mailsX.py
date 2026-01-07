@@ -1,4 +1,4 @@
-from flask import Flask , request , jsonify
+from flask import Flask , request , jsonify, logging
 from flask_mailman import Mail , EmailMessage
 import logging
 
@@ -12,7 +12,7 @@ load_dotenv() # for reading API key from `.env` file.
 app = Flask(__name__)
 app.config['MAIL_SERVER'] = os.getenv("MAILSERVER") 
 app.config['MAIL_PORT'] = int(os.getenv("MAILPORT"))  
-app.config['MAIL_USE_SSL'] =  False
+app.config['MAIL_USE_SSL'] =  True
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USERNAME'] = os.getenv("MAILUSERNAME")
 app.config['MAIL_PASSWORD'] = os.getenv("MAILPASSWORD")
@@ -30,12 +30,49 @@ mail = Mail(app)
 # # Manually open the connection
 # connection.open()
 
+class Confirmers():
+    def __init__(self):
+        self.username: str = ""
+        self.mail: str = ""
+        self.password_confirm: str = ""
+        self.confirm_hash: str = ""
+
+confirmers = Confirmers()
+
+
+def emialchecker(email: str):
+    check : bool
+    if len(email) > 13:
+        print("Email is more than 13 characters", email)
+        if "@" in email and ".com" in email:
+            confirmers.mail = email
+            check = True
+        else :
+            check = False
+        
+        if check:
+            print("The email is a valid one" )
+            logging.info("Email validation successful")
+        elif not check:
+            print("This is not a valid mail")
+            logging.error("Invalid Email failed")
+
+        try:
+            print(confirmers.username)
+        except Exception as e:
+            print(f"{e} this is the reason")
+            return ""
+    else:
+        print("This is email is less than < 13 characters")
+        return ("Email Not Correct")
+    
 
 @app.route("/resetpassword/confirm", methods=["POST"])
 def PasswordConfirm():
     
     data = request.get_json()
     email = data.get("email")
+    emialchecker(email=email)
 
     html_message = f"""
                     <div style='font-family:Arial, sans-serif; background:#f9f9f9; padding:20px;'>
@@ -51,27 +88,35 @@ def PasswordConfirm():
                             </a>
                             </p>
                             <p style='color:#555; font-size:13px; line-height:1.6;'>
-                            For security reasons, both links will expire in 30 minutes.
+                            For security reasons, this link will expire in 30 minutes.
                             </p>
                             <hr style='border:none; border-top:1px solid #eee; margin:24px 0;' />
                         </div>
                     </div>
                     """
     try:
+         #---- To check if the email exists in the database
+        user = db_table.session.query(
+            User.email
+        ).filter_by(email=confirmers.mail).first()
+
+        if not user:
+            return jsonify({"status":"failed", "Message":"Email not found"}), 404
+        
         msg = EmailMessage(
             subject='X clone Confirm Password',
             body=html_message,
-            to=[f'{str(email)}'],
+            to=[f'{str(confirmers.mail)}'],
             from_email=f'{os.getenv("MAILUSERNAME")}'
         )
 
         msg.content_subtype = "html"
         msg.send()
 
-        return jsonify({"status":"successfull", "Message":"Mail sent successfully"}), 200
+        return jsonify({"status":"successful", "Message":"Mail sent successfully"}), 200
        
     except Exception as ex:
-        print(ex)
+        logging.error("Mail error: %s", ex, exc_info=True)
         return(f"Mail error: {str(ex)}")
 
 @app.route("/resetpassword/forgotpassword", methods=["POST"])
@@ -79,6 +124,7 @@ def PasswordRequest():
 
     data = request.get_json()
     email = data.get("email")
+    emialchecker(email=email)
 
     html_message = f"""
                     <div style='font-family:Arial, sans-serif; background:#f9f9f9; padding:20px;'>
@@ -102,26 +148,25 @@ def PasswordRequest():
                     """
     try:
         print('Sending Mail')
-
+        logging.info("Sending password reset email %s", confirmers.mail)
         #---- To check if the email exists in the database
         user = db_table.session.query(
             User.email
-        ).filter_by(email=email).first()
+        ).filter_by(email=confirmers.mail).first()
 
         if not user:
             return jsonify({"status":"failed", "Message":"Email not found"}), 404
         
-        if user:
-            msg = EmailMessage(
-                subject='X clone Password Reset',
-                body=html_message,
-                to=[f'{str(email)}'],
-                from_email=f'{os.getenv("MAILUSERNAME")}'
-            )
-            msg.content_subtype = "html"
-            msg.send()
-            
-            return jsonify({"status":"successfull", "Message":"Mail sent successfully"}), 200
+        msg = EmailMessage(
+            subject='X clone Password Reset',
+            body=html_message,
+            to=[f'{str(confirmers.mail)}'],
+            from_email=f'{os.getenv("MAILUSERNAME")}'
+        )
+        msg.content_subtype = "html"
+        msg.send()
+        
+        return jsonify({"status":"successful", "Message":"Mail sent successfully"}), 200
      
     except Exception as ex:
         return(f"Mail error: {str(ex)}")
