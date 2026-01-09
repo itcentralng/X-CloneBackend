@@ -1,11 +1,12 @@
 from flask import Flask , request , jsonify, logging
+import requests
 from flask_mailman import Mail , EmailMessage
 import logging
 
 import os
 from dotenv import load_dotenv
-from index import db_table
-from models.dbMigrate import User
+# from index import db_table
+# from models.dbMigrate import User
 
 load_dotenv() # for reading API key from `.env` file.
 
@@ -29,6 +30,18 @@ mail = Mail(app)
 
 # # Manually open the connection
 # connection.open()
+
+import smtplib, ssl
+from email.message import EmailMessage
+port = os.getenv("PORTII")  # For SSL
+smtp_server = os.getenv("SMTP_SERVER2")
+username = os.getenv("USERNAMEII")
+password = os.getenv("MAILPASSWORD2")
+
+msg = EmailMessage()
+
+msg['From'] = os.getenv("FROMMAIL2")
+
 
 class Confirmers():
     def __init__(self):
@@ -69,10 +82,13 @@ def emialchecker(email: str):
 
 @app.route("/resetpassword/confirm", methods=["POST"])
 def PasswordConfirm():
+    msg['Subject'] = "Xclone Confirm Password"
     
     data = request.get_json()
     email = data.get("email")
     emialchecker(email=email)
+
+    msg['To'] = "%s" % confirmers.mail
 
     html_message = f"""
                     <div style='font-family:Arial, sans-serif; background:#f9f9f9; padding:20px;'>
@@ -96,25 +112,32 @@ def PasswordConfirm():
                     """
     try:
          #---- To check if the email exists in the database
-        user = db_table.session.query(
-            User.email
-        ).filter_by(email=confirmers.mail).first()
+        # user = db_table.session.query(
+        #     User.email
+        # ).filter_by(email=confirmers.mail).first()
 
-        if not user:
-            return jsonify({"status":"failed", "Message":"Email not found"}), 404
+        # if not user:
+        #     return jsonify({"status":"failed", "Message":"Email not found"}), 404
         
-        msg = EmailMessage(
-            subject='X clone Confirm Password',
-            body=html_message,
-            to=[f'{str(confirmers.mail)}'],
-            from_email=f'{os.getenv("MAILUSERNAME")}'
-        )
+        content = msg.set_content(html_message)
 
-        msg.content_subtype = "html"
-        msg.send()
+        if port == os.getenv("FIRSTMAILPORT"):
+            context = ssl.create_default_context()
+            with smtplib.SMTP_SSL(smtp_server, port, context=content) as server:
+                server.login(username, password)
+                server.send_message(msg)
+        elif port == os.getenv("SECONDMAILPORT"):
+
+            with smtplib.SMTP(smtp_server, port) as server:
+                server.starttls()
+                server.login(username, password)
+                server.send_message(msg)
+        else:
+            print ("use 465 / 587 as port value")
+            exit()
 
         return jsonify({"status":"successful", "Message":"Mail sent successfully"}), 200
-       
+
     except Exception as ex:
         logging.error("Mail error: %s", ex, exc_info=True)
         return(f"Mail error: {str(ex)}")
@@ -122,9 +145,13 @@ def PasswordConfirm():
 @app.route("/resetpassword/forgotpassword", methods=["POST"])
 def PasswordRequest():
 
+    msg['Subject'] = "Xclone Password Reset"
+
     data = request.get_json()
     email = data.get("email")
     emialchecker(email=email)
+
+    msg['To'] = email
 
     html_message = f"""
                     <div style='font-family:Arial, sans-serif; background:#f9f9f9; padding:20px;'>
@@ -150,27 +177,94 @@ def PasswordRequest():
         print('Sending Mail')
         logging.info("Sending password reset email %s", confirmers.mail)
         #---- To check if the email exists in the database
-        user = db_table.session.query(
-            User.email
-        ).filter_by(email=confirmers.mail).first()
+        # user = db_table.session.query(
+        #     User.email
+        # ).filter_by(email=confirmers.mail).first()
 
-        if not user:
-            return jsonify({"status":"failed", "Message":"Email not found"}), 404
-        
-        msg = EmailMessage(
-            subject='X clone Password Reset',
-            body=html_message,
-            to=[f'{str(confirmers.mail)}'],
-            from_email=f'{os.getenv("MAILUSERNAME")}'
-        )
-        msg.content_subtype = "html"
-        msg.send()
-        
+        # if not user:
+        #     return jsonify({"status":"failed", "Message":"Email not found"}), 404
+
+        # context = ssl.create_default_context()
+        content = msg.set_content(html_message)
+
+        if port == os.getenv("FIRSTMAILPORT"):
+
+            with smtplib.SMTP_SSL(smtp_server, port, context=content) as server:
+                server.login(username, password)
+                server.send_message(msg)
+        elif port == os.getenv("SECONDMAILPORT"):
+
+            with smtplib.SMTP(smtp_server, port) as server:
+                server.starttls()
+                server.login(username, password)
+                server.send_message(msg)
+        else:
+            print ("use 465 / 587 as port value")
+            exit()
+
         return jsonify({"status":"successful", "Message":"Mail sent successfully"}), 200
      
     except Exception as ex:
         return(f"Mail error: {str(ex)}")
+    
+# @app.route("/test", methods=["POST"])
+# def testing():
+#     try:
 
+        # url = "https://api.zeptomail.com/v1.1/email"
+
+        # payload = "{\n\"from\": { \"address\": \"undefined\"},\n\"to\": [{\"email_address\": {\"address\": \"ibiyemiemmanuel68@gmail.com\",\"name\": \"Akinola Ibiyemi\"}}],\n\"subject\":\"Test Email\",\n\"htmlbody\":\"<div><b> Test email sent successfully.  </b></div>\"\n}"
+        # headers = {
+        # 'accept': "application/json",
+        # 'content-type': "application/json",
+        # 'authorization': "Zoho-enczapikey wSsVR60n80L5Xal5n2Cqdrxuz1UAUl6iEBl72FOm7yL8SP7F9cc+kkefAASlGPVMQm5hEWEVo7woyxkH2jIPh9p7mV0BDiiF9mqRe1U4J3x17qnvhDzKX21cmhCBKI4AwAxtnGJlFswq+g==",
+        # }
+
+        # response = requests.request("POST", url, data=payload, headers=headers)
+
+        # print(response.text)
+        # html_message = f"""
+        #             <div style='font-family:Arial, sans-serif; background:#f9f9f9; padding:20px;'>
+        #                 <div style='max-width:600px; margin:auto; background:#ffffff; border:1px solid #ddd; border-radius:8px; padding:24px;'>
+        #                     <h2 style='color:#333; margin-top:0;'>Password Reset Request</h2>
+        #                     <p style='color:#555; font-size:14px; line-height:1.6;'>
+        #                     You requested to reset your password. Click the button below to set a new one.
+        #                     </p>
+        #                     <p style='text-align:center; margin:24px 0;'>
+        #                     <a href='{{confirm_password}}'
+        #                         style='background:#1d9bf0; color:#fff; text-decoration:none; padding:12px 20px; border-radius:4px; font-weight:bold; cursor:pointer;'>
+        #                         Reset Password
+        #                     </a>
+        #                     </p>
+        #                     <p style='color:#555; font-size:13px; line-height:1.6;'>
+        #                     If you didn’t request this, you can ignore this email — your password will remain unchanged.
+        #                     </p>
+        #                     <hr style='border:none; border-top:1px solid #eee; margin:24px 0;' />
+        #                 </div>
+        #             </div>
+        #             """
+
+        # conext = msg.set_content(html_message)
+
+        # if port == os.getenv("FIRSTMAILPORT"):
+        #     context = ssl.create_default_context()
+        #     with smtplib.SMTP_SSL(smtp_server, port, context=conext) as server:
+        #         server.login(username, password)
+        #         server.send_message(msg)
+        # elif port == os.getenv("SECONDMAILPORT"):
+
+        #     with smtplib.SMTP(smtp_server, port) as server:
+        #         server.starttls()
+        #         server.login(username, password)
+        #         server.send_message(msg)
+        # else:
+        #     print ("use 465 / 587 as port value")
+        #     exit()
+
+        # return jsonify({"status":"successful", "Message":"Mail sent successfully"}), 200
+    # except Exception as e:
+    #     print(f"Error occured: {str(e)}")
+    #     return (f"Error occured: {str(e)}")
 
 #----This was a testing mailing endpoint
 # @app.route("/sendmail", methods=["GET"])
@@ -187,6 +281,8 @@ def PasswordRequest():
        
 #     except Exception as e:
 #         return jsonify({"status":"error","Message":f"Error occured: {str(e)}"}), 500
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
