@@ -5,14 +5,14 @@ import logging
 
 import os
 from dotenv import load_dotenv
-# from index import db_table
-# from models.dbMigrate import User
+from index import db_table
+from models.dbMigrate import User
 
 load_dotenv() # for reading API key from `.env` file.
 
 app = Flask(__name__)
 app.config['MAIL_SERVER'] = os.getenv("MAILSERVER") 
-app.config['MAIL_PORT'] = int(os.getenv("MAILPORT"))  
+app.config['MAIL_PORT'] = int(os.getenv("SECONDMAILPORT"))  
 app.config['MAIL_USE_SSL'] =  True
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USERNAME'] = os.getenv("MAILUSERNAME")
@@ -112,12 +112,12 @@ def PasswordConfirm():
                     """
     try:
          #---- To check if the email exists in the database
-        # user = db_table.session.query(
-        #     User.email
-        # ).filter_by(email=confirmers.mail).first()
+        user = db_table.session.query(
+            User.email
+        ).filter_by(email=confirmers.mail).first()
 
-        # if not user:
-        #     return jsonify({"status":"failed", "Message":"Email not found"}), 404
+        if not user:
+            return jsonify({"status":"failed", "Message":"Email not found"}), 404
         
         content = msg.set_content(html_message)
 
@@ -177,12 +177,12 @@ def PasswordRequest():
         print('Sending Mail')
         logging.info("Sending password reset email %s", confirmers.mail)
         #---- To check if the email exists in the database
-        # user = db_table.session.query(
-        #     User.email
-        # ).filter_by(email=confirmers.mail).first()
+        user = db_table.session.query(
+            User.email
+        ).filter_by(email=confirmers.mail).first()
 
-        # if not user:
-        #     return jsonify({"status":"failed", "Message":"Email not found"}), 404
+        if not user:
+            return jsonify({"status":"failed", "Message":"Email not found"}), 404
 
         # context = ssl.create_default_context()
         content = msg.set_content(html_message)
@@ -211,14 +211,13 @@ def PasswordRequest():
 # def testing():
 #     try:
 
-        # url = "https://api.zeptomail.com/v1.1/email"
+        # url = os.getenv("URLENDPOINT")
 
         # payload = "{\n\"from\": { \"address\": \"undefined\"},\n\"to\": [{\"email_address\": {\"address\": \"ibiyemiemmanuel68@gmail.com\",\"name\": \"Akinola Ibiyemi\"}}],\n\"subject\":\"Test Email\",\n\"htmlbody\":\"<div><b> Test email sent successfully.  </b></div>\"\n}"
         # headers = {
         # 'accept': "application/json",
         # 'content-type': "application/json",
-        # 'authorization': "Zoho-enczapikey wSsVR60n80L5Xal5n2Cqdrxuz1UAUl6iEBl72FOm7yL8SP7F9cc+kkefAASlGPVMQm5hEWEVo7woyxkH2jIPh9p7mV0BDiiF9mqRe1U4J3x17qnvhDzKX21cmhCBKI4AwAxtnGJlFswq+g==",
-        # }
+        # 'authorization': f"Zoho-enczapikey {os.getenv('MAILPASSWORD2')}"
 
         # response = requests.request("POST", url, data=payload, headers=headers)
 
