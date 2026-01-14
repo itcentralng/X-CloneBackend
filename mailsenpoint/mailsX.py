@@ -38,9 +38,6 @@ smtp_server = os.getenv("SMTP_SERVER2")
 username = os.getenv("USERNAMEII")
 password = os.getenv("MAILPASSWORD2")
 
-msg = EmailMessage()
-
-msg['From'] = os.getenv("FROMMAIL2")
 
 
 class Confirmers():
@@ -82,13 +79,17 @@ def emialchecker(email: str):
 
 @app.route("/resetpassword/confirm", methods=["POST"])
 def PasswordConfirm():
-    msg['Subject'] = "Xclone Confirm Password"
+    
     
     data = request.get_json()
     email = data.get("email")
     emialchecker(email=email)
 
-    msg['To'] = "%s" % confirmers.mail
+    msg = EmailMessage()
+    msg['Subject'] = "Xclone Password Confirm"
+    msg['From'] = os.getenv("FROMMAIL2") or os.getenv("FROMMAIL")
+    msg['To'] = confirmers.mail
+
 
     html_message = f"""
                     <div style='font-family:Arial, sans-serif; background:#f9f9f9; padding:20px;'>
@@ -145,13 +146,15 @@ def PasswordConfirm():
 @app.route("/resetpassword/forgotpassword", methods=["POST"])
 def PasswordRequest():
 
-    msg['Subject'] = "Xclone Password Reset"
-
     data = request.get_json()
     email = data.get("email")
     emialchecker(email=email)
 
-    msg['To'] = email
+    msg = EmailMessage()
+    msg['Subject'] = "Xclone Password Reset"
+    msg['From'] = os.getenv("FROMMAIL2") or os.getenv("FROMMAIL")
+    msg['To'] = confirmers.mail
+
 
     html_message = f"""
                     <div style='font-family:Arial, sans-serif; background:#f9f9f9; padding:20px;'>
@@ -207,81 +210,6 @@ def PasswordRequest():
     except Exception as ex:
         return(f"Mail error: {str(ex)}")
     
-# @app.route("/test", methods=["POST"])
-# def testing():
-#     try:
-
-        # url = os.getenv("URLENDPOINT")
-
-        # payload = "{\n\"from\": { \"address\": \"undefined\"},\n\"to\": [{\"email_address\": {\"address\": \"ibiyemiemmanuel68@gmail.com\",\"name\": \"Akinola Ibiyemi\"}}],\n\"subject\":\"Test Email\",\n\"htmlbody\":\"<div><b> Test email sent successfully.  </b></div>\"\n}"
-        # headers = {
-        # 'accept': "application/json",
-        # 'content-type': "application/json",
-        # 'authorization': f"Zoho-enczapikey {os.getenv('MAILPASSWORD2')}"
-
-        # response = requests.request("POST", url, data=payload, headers=headers)
-
-        # print(response.text)
-        # html_message = f"""
-        #             <div style='font-family:Arial, sans-serif; background:#f9f9f9; padding:20px;'>
-        #                 <div style='max-width:600px; margin:auto; background:#ffffff; border:1px solid #ddd; border-radius:8px; padding:24px;'>
-        #                     <h2 style='color:#333; margin-top:0;'>Password Reset Request</h2>
-        #                     <p style='color:#555; font-size:14px; line-height:1.6;'>
-        #                     You requested to reset your password. Click the button below to set a new one.
-        #                     </p>
-        #                     <p style='text-align:center; margin:24px 0;'>
-        #                     <a href='{{confirm_password}}'
-        #                         style='background:#1d9bf0; color:#fff; text-decoration:none; padding:12px 20px; border-radius:4px; font-weight:bold; cursor:pointer;'>
-        #                         Reset Password
-        #                     </a>
-        #                     </p>
-        #                     <p style='color:#555; font-size:13px; line-height:1.6;'>
-        #                     If you didn’t request this, you can ignore this email — your password will remain unchanged.
-        #                     </p>
-        #                     <hr style='border:none; border-top:1px solid #eee; margin:24px 0;' />
-        #                 </div>
-        #             </div>
-        #             """
-
-        # conext = msg.set_content(html_message)
-
-        # if port == os.getenv("FIRSTMAILPORT"):
-        #     context = ssl.create_default_context()
-        #     with smtplib.SMTP_SSL(smtp_server, port, context=conext) as server:
-        #         server.login(username, password)
-        #         server.send_message(msg)
-        # elif port == os.getenv("SECONDMAILPORT"):
-
-        #     with smtplib.SMTP(smtp_server, port) as server:
-        #         server.starttls()
-        #         server.login(username, password)
-        #         server.send_message(msg)
-        # else:
-        #     print ("use 465 / 587 as port value")
-        #     exit()
-
-        # return jsonify({"status":"successful", "Message":"Mail sent successfully"}), 200
-    # except Exception as e:
-    #     print(f"Error occured: {str(e)}")
-    #     return (f"Error occured: {str(e)}")
-
-#----This was a testing mailing endpoint
-# @app.route("/sendmail", methods=["GET"])
-# def sendingmail():
-#     try:
-#         msg = EmailMessage(
-#             subject='X clone Forgotten Password Reset',
-#             body='Forgotten password kindly reset your password ussing the link i will provide',
-#             to=[os.getenv("TESTRECIPANT")],
-#             from_email='x@gmail.com'
-#         )
-#         msg.send()
-#         return jsonify({"status":"successfull", "Message":"Mail sent successfully"}), 200
-       
-#     except Exception as e:
-#         return jsonify({"status":"error","Message":f"Error occured: {str(e)}"}), 500
-
-
 
 if __name__ == "__main__":
     app.run(debug=True)
