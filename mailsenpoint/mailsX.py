@@ -1,4 +1,4 @@
-from flask import Flask , request , jsonify, logging
+from flask import Flask , request , jsonify, logging, json
 import requests
 from flask_mailman import Mail , EmailMessage
 import logging
@@ -7,6 +7,7 @@ import os
 from dotenv import load_dotenv
 from index import db_table
 from models.dbMigrate import User
+
 
 load_dotenv() # for reading API key from `.env` file.
 
@@ -86,9 +87,6 @@ def PasswordConfirm():
     emialchecker(email=email)
 
     msg = EmailMessage()
-    msg['Subject'] = "Xclone Password Confirm"
-    msg['From'] = os.getenv("FROMMAIL2") or os.getenv("FROMMAIL")
-    msg['To'] = confirmers.mail
 
 
     html_message = f"""
@@ -120,25 +118,40 @@ def PasswordConfirm():
         if not user:
             return jsonify({"status":"failed", "Message":"Email not found"}), 404
         
-        content = msg.set_content(html_message)
+        import requests
 
-        if port == os.getenv("FIRSTMAILPORT"):
-            context = ssl.create_default_context()
-            with smtplib.SMTP_SSL(smtp_server, port, context=content) as server:
-                server.login(username, password)
-                server.send_message(msg)
-        elif port == os.getenv("SECONDMAILPORT"):
+        url = "https://api.zeptomail.com/v1.1/email"
 
-            with smtplib.SMTP(smtp_server, port) as server:
-                server.starttls()
-                server.login(username, password)
-                server.send_message(msg)
-        else:
-            print ("use 465 / 587 as port value")
-            exit()
+        payload = (
+            '{'
+            '"from": {"address": "%s"},'
+            '"to": [{"email_address": {"address": "%s", "name": "X Clone"}}],'
+            '"subject": "X Testing mail",'
+            '"htmlbody": %s'
+            '}'
+        ) % (
+            os.getenv("FROMMAIL2") or os.getenv("FROMMAIL"),
+            email,
+            json.dumps(html_message)   
+        )
 
-        return jsonify({"status":"successful", "Message":"Mail sent successfully"}), 200
+        headers = {
+            'accept': "application/json",
+            'content-type': "application/json",
+            'authorization': ("Zoho-enczapikey %s" % os.getenv('MAILPASSWORD2')),
+        }
 
+        response = requests.request("POST", url, data=payload, headers=headers)
+
+        print(response.status_code)
+        if response.status_code == 201:
+            print("Email sent successfully via ZeptoMail")
+            return jsonify({"status": "success"}), 200
+        elif response.status_code == 400:
+            print("Bad Request - Invalid email format or missing fields")
+            return jsonify({"status": "error", "message": "Bad Request"}), 400
+        elif response.status_code != 201:
+            return jsonify({"status":"Error", "message": response.status_code})
     except Exception as ex:
         logging.error("Mail error: %s", ex, exc_info=True)
         return(f"Mail error: {str(ex)}")
@@ -151,9 +164,6 @@ def PasswordRequest():
     emialchecker(email=email)
 
     msg = EmailMessage()
-    msg['Subject'] = "Xclone Password Reset"
-    msg['From'] = os.getenv("FROMMAIL2") or os.getenv("FROMMAIL")
-    msg['To'] = confirmers.mail
 
 
     html_message = f"""
@@ -186,30 +196,44 @@ def PasswordRequest():
 
         if not user:
             return jsonify({"status":"failed", "Message":"Email not found"}), 404
+        import requests
 
-        # context = ssl.create_default_context()
-        content = msg.set_content(html_message)
+        url = "https://api.zeptomail.com/v1.1/email"
 
-        if port == os.getenv("FIRSTMAILPORT"):
+        payload = (
+            '{'
+            '"from": {"address": "%s"},'
+            '"to": [{"email_address": {"address": "%s", "name": "X Clone"}}],'
+            '"subject": "X Testing mail",'
+            '"htmlbody": %s'
+            '}'
+        ) % (
+            os.getenv("FROMMAIL2") or os.getenv("FROMMAIL"),
+            email,
+            json.dumps(html_message) 
+        )
 
-            with smtplib.SMTP_SSL(smtp_server, port, context=content) as server:
-                server.login(username, password)
-                server.send_message(msg)
-        elif port == os.getenv("SECONDMAILPORT"):
+        headers = {
+            'accept': "application/json",
+            'content-type': "application/json",
+            'authorization': ("Zoho-enczapikey %s" % os.getenv('MAILPASSWORD2')),
+        }
 
-            with smtplib.SMTP(smtp_server, port) as server:
-                server.starttls()
-                server.login(username, password)
-                server.send_message(msg)
-        else:
-            print ("use 465 / 587 as port value")
-            exit()
+        response = requests.request("POST", url, data=payload, headers=headers)
 
-        return jsonify({"status":"successful", "Message":"Mail sent successfully"}), 200
+        print(response.status_code)
+        if response.status_code == 201:
+            print("Email sent successfully via ZeptoMail")
+            return jsonify({"status": "success"}), 200
+        elif response.status_code == 400:
+            print("Bad Request - Invalid email format or missing fields")
+            return jsonify({"status": "error", "message": "Bad Request"}), 400
+        elif response.status_code != 201:
+            return jsonify({"status":"Error", "message": response.status_code})
      
     except Exception as ex:
         return(f"Mail error: {str(ex)}")
-    
+
 
 if __name__ == "__main__":
     app.run(debug=True)
