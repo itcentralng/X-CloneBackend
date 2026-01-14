@@ -40,7 +40,7 @@ password = os.getenv("MAILPASSWORD2")
 
 msg = EmailMessage()
 
-msg['From'] = os.getenv("FROMMAIL2")
+# msg['From'] = os.getenv("FROMMAIL2")
 
 
 class Confirmers():
