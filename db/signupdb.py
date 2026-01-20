@@ -12,7 +12,7 @@ import datetime as date
 # --- This is for the password encryption
 from flask_bcrypt import Bcrypt
 
-
+from flask import g
 # from connection import 
 
 #-- This is for the getting the connection
@@ -20,11 +20,12 @@ from flask_bcrypt import Bcrypt
 
 
 #--- This is the session for auth signing up
-from models.dbMigrate import User
+from models.dbMigrate import User , tempcodedb , tempdb
 
 from index import db_table
 
 import uuid
+import random
 
 load_dotenv()
 
@@ -121,14 +122,14 @@ def register():
     elif confirmers.mail == "":
         return {"Sorry your Email is null": 311}
 
-    try:
-        
-        mail = confirmers.mail
-        # cur.execute("""INSERT INTO x_db (id , username , email, dob , passwordacc, profileimage, coverimage)
-        #             VALUES (%s , %s , %s , %s , %s, %s, %s) """, 
-        #             (random_id , confirmers.username ,mail , inpdate , encryp_pass, profile_url, cover_url))
+    otp_gen = random.randint(100000, 999999)
+    g['randotp'] = otp_gen
 
-        new_user = User(
+    try:
+        print("This is the OTP:", otp_gen)
+        mail = confirmers.mail
+       
+        new_user = tempdb(
             id=random_id,
             username=confirmers.username,
             email=mail,
@@ -164,12 +165,46 @@ def register():
             return jsonify({"message": "User Email Exist Already"}), 500
         return jsonify({"error": f"Error from the tweet Backend: {str(e)}"}), 500
 
-    # finally:
-    #     try:
-            
-    #     except Exception as error:
-    #         return jsonify({"Commit Error 500":"Back"}), 500
-  
+
+@app.route("/otp", methods=["POST"])
+def otp():
+    data = request.get_json()
+    user_otp = data.get("otp")
+
+    otp = db_table.session.query(
+            tempcodedb.user_mail,
+            tempcodedb.user_code
+        ).filter(tempcodedb.user_code == user_otp).first()
+    
+    if user_otp == otp[1] :
+        print("This is the user mail: ", otp[0])
+
+
+        # Erm i did this so i can get the details the users signuped with in the temp db
+        user = db_table.session.query(
+            tempdb.id,
+            tempdb.username,
+            tempdb.email,
+            tempdb.dob,
+            tempdb.passwordacc,
+            tempdb.profileimage,
+            tempdb.coverimage
+        ).filter(tempdb.email == otp[0]).first()
+
+        new_user = User(
+            id=user[0],
+            username=user[1],
+            email=user[2],
+            dob=user[3],
+            passwordacc=user[4],
+            profileimage=user[5],
+            coverimage=user[6]
+        )
+
+        db_table.session.add(new_user)
+        db_table.session.commit()
+    else:
+        return jsonify({"message": "Invalid OTP!"}), 400
 
 #--- I kept this for so i can use python command to run it ---
 if __name__ == "__main__":

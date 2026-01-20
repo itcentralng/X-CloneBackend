@@ -1,4 +1,4 @@
-from flask import Flask , request , jsonify, logging, json
+from flask import Flask , request , jsonify, logging, json , g
 import requests
 from flask_mailman import Mail , EmailMessage
 import logging
@@ -88,24 +88,34 @@ def PasswordConfirm():
 
     msg = EmailMessage()
 
+    # This is the otp code generated
+    code = g['randotp']
 
     html_message = f"""
                     <div style='font-family:Arial, sans-serif; background:#f9f9f9; padding:20px;'>
                         <div style='max-width:600px; margin:auto; background:#ffffff; border:1px solid #ddd; border-radius:8px; padding:24px;'>
-                            <h2 style='color:#333; margin-top:0;'>Confirm Your Password</h2>
+                            <div style='text-align:right; margin-bottom:20px;'>
+                                <div style='display:inline-block; background:#000; color:#fff; width:40px; height:40px; line-height:40px; text-align:center; font-weight:bold; font-size:20px;'>X</div>
+                            </div>
+                            <h2 style='color:#333; margin-top:0;'>Confirm your email address</h2>
                             <p style='color:#555; font-size:14px; line-height:1.6;'>
-                            To confirm your new password, please click the link below:
+                            Please enter this verification code to get started on X:
                             </p>
-                            <p style='text-align:center; margin:24px 0;'>
-                            <a href='{{reset_password}}'
-                                style='background:#28a745; color:#fff; text-decoration:none; padding:12px 20px; border-radius:4px; font-weight:bold; cursor:pointer;'>
-                                Confirm Password
-                            </a>
-                            </p>
+                            <h1 style='color:#000; font-size:36px; letter-spacing:2px; margin:20px 0;'> {code} </h1>
                             <p style='color:#555; font-size:13px; line-height:1.6;'>
-                            For security reasons, this link will expire in 30 minutes.
+                            Verification codes expire after two hours.
+                            </p>
+                            <p style='color:#555; font-size:14px; margin-top:24px;'>
+                            Thanks,<br>X
                             </p>
                             <hr style='border:none; border-top:1px solid #eee; margin:24px 0;' />
+                            <p style='text-align:center; color:#999; font-size:12px;'>
+                            <a href='#' style='color:#1DA1F2; text-decoration:none;'>Help</a> | 
+                            <a href='#' style='color:#1DA1F2; text-decoration:none;'>Email security tips</a>
+                            </p>
+                            <p style='text-align:center; color:#999; font-size:11px; margin-top:12px;'>
+                            X Corp. 1355 Market Street, Suite 900 San Francisco, CA 94103
+                            </p>
                         </div>
                     </div>
                     """
