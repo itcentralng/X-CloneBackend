@@ -58,4 +58,20 @@ class like_table(db_table.Model):
     user_id = db_table.Column(db_table.String,  nullable=False, primary_key=True)
     tweet_id = db_table.Column(db_table.String(256),  nullable=False)
 
+class tempcodedb(db_table.Model):
+    __tablename__ = "tempcodedb"
 
+    user_mail = db_table.Column(db_table.String , nullable=False , primary_key = False)
+    user_code = db_table.Column(db_table.Integer , nullable=True , primary_key = True)
+
+
+class tempdb(db_table.Model):
+    __tablename__ = "temp_db"
+
+    id = db_table.Column(db_table.String,  nullable=False)
+    username = db_table.Column(db_table.String(256),  nullable=False)
+    email = db_table.Column(db_table.String(256), primary_key=True,  nullable=False)
+    dob = db_table.Column(db_table.String(128), nullable=False)
+    passwordacc = db_table.Column(db_table.String(256), nullable=False)
+    profileimage = db_table.Column(db_table.String(256))
+    coverimage = db_table.Column(db_table.String(256))
