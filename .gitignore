@@ -5,3 +5,4 @@ backendVE/
 __pycache__/
 .vscode/
 venv/
+migrations/

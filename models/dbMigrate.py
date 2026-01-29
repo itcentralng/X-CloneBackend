@@ -17,9 +17,9 @@ from index import db_table
 class User(db_table.Model):
     __tablename__ = 'x_db'
 
-    id = db_table.Column(db_table.String,  nullable=False)
+    id = db_table.Column(db_table.String,  nullable=False, primary_key=True)
     username = db_table.Column(db_table.String(256),  nullable=False)
-    email = db_table.Column(db_table.String(256), primary_key=True,  nullable=False)
+    email = db_table.Column(db_table.String(256), unique=True,  nullable=False)
     dob = db_table.Column(db_table.String(128), nullable=False)
     passwordacc = db_table.Column(db_table.String(256), nullable=False)
     profileimage = db_table.Column(db_table.String(256))
@@ -61,8 +61,8 @@ class like_table(db_table.Model):
 class tempcodedb(db_table.Model):
     __tablename__ = "tempcodedb"
 
-    user_mail = db_table.Column(db_table.String , nullable=False , primary_key = False)
-    user_code = db_table.Column(db_table.Integer , nullable=True , primary_key = True)
+    user_mail = db_table.Column(db_table.String , nullable=False , primary_key = True, autoincrement=False)
+    user_code = db_table.Column(db_table.Integer , nullable=True , unique = True, autoincrement=False)
 
 
 class tempdb(db_table.Model):
