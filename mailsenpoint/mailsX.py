@@ -89,7 +89,7 @@ def PasswordConfirm():
     msg = EmailMessage()
 
     # This is the otp code generated
-    code = g['randotp']
+    code = g.rand_otp
 
     html_message = f"""
                     <div style='font-family:Arial, sans-serif; background:#f9f9f9; padding:20px;'>

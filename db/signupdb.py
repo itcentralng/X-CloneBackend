@@ -1,4 +1,4 @@
-from flask import Flask , request , jsonify
+from flask import Flask , request , jsonify , g
 from flask_bcrypt import Bcrypt
 import os
 from dotenv import load_dotenv
@@ -113,6 +113,7 @@ def register():
     usernamechecker(inpusername)
     passwordcheck(inppassword)
 
+    
     encryp_pass= bcrypt.generate_password_hash(password=inppassword).decode("utf-8")
     random_id = str(uuid.uuid4())
     print("This is the random id", random_id)
@@ -123,7 +124,7 @@ def register():
         return {"Sorry your Email is null": 311}
 
     otp_gen = random.randint(100000, 999999)
-    g['randotp'] = otp_gen
+    g.rand_otp = otp_gen
 
     try:
         print("This is the OTP:", otp_gen)
@@ -168,43 +169,51 @@ def register():
 
 @app.route("/otp", methods=["POST"])
 def otp():
-    data = request.get_json()
-    user_otp = data.get("otp")
+    try: 
+        data = request.get_json()
+        user_otp = data.get("otp")
 
-    otp = db_table.session.query(
-            tempcodedb.user_mail,
-            tempcodedb.user_code
-        ).filter(tempcodedb.user_code == user_otp).first()
-    
-    if user_otp == otp[1] :
-        print("This is the user mail: ", otp[0])
+        otp = db_table.session.query(
+                tempcodedb.user_mail,
+                tempcodedb.user_code
+            ).filter(tempcodedb.user_code == user_otp).first()
+        
+        if user_otp == otp[1] :
+            print("This is the user mail: ", otp[0])
 
+                # Did this also to check if user already exist if so return user already exist
+            if db_table.session.query(User).filter(User.email == otp[0]).first():
+                return jsonify({"message": "User already exists"}), 400
 
-        # Erm i did this so i can get the details the users signuped with in the temp db
-        user = db_table.session.query(
-            tempdb.id,
-            tempdb.username,
-            tempdb.email,
-            tempdb.dob,
-            tempdb.passwordacc,
-            tempdb.profileimage,
-            tempdb.coverimage
-        ).filter(tempdb.email == otp[0]).first()
+            elif not db_table.session.query(tempdb).filter(tempdb.email == otp[0]).first():
+                
+                # Erm i did this so i can get the details the users signuped with in the temp db
+                user = db_table.session.query(
+                    tempdb.id,
+                    tempdb.username,
+                    tempdb.email,
+                    tempdb.dob,
+                    tempdb.passwordacc,
+                    tempdb.profileimage,
+                    tempdb.coverimage
+                ).filter(tempdb.email == otp[0]).first()
 
-        new_user = User(
-            id=user[0],
-            username=user[1],
-            email=user[2],
-            dob=user[3],
-            passwordacc=user[4],
-            profileimage=user[5],
-            coverimage=user[6]
-        )
+                new_user = User(
+                    id=user[0],
+                    username=user[1],
+                    email=user[2],
+                    dob=user[3],
+                    passwordacc=user[4],
+                    profileimage=user[5],
+                    coverimage=user[6]
+                )
 
-        db_table.session.add(new_user)
-        db_table.session.commit()
-    else:
-        return jsonify({"message": "Invalid OTP!"}), 400
+                db_table.session.add(new_user)
+                db_table.session.commit()
+        else:
+            return jsonify({"message": "Invalid OTP!"}), 400
+    except Exception as e:
+        return {"error": {"message": str(e)}}, 500
 
 #--- I kept this for so i can use python command to run it ---
 if __name__ == "__main__":

@@ -89,11 +89,6 @@ def token_required(f):
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
             email = data.get('email')
-        
-            # curr = conn.cursor()
-            # curr.execute("""SELECT * FROM x_db WHERE email=%s""" , 
-            #              (email,))
-            # user_row = curr.fetchone()
 
             user_row = db_table.session.query(
                 User.id,
@@ -203,13 +198,6 @@ def logindb():
         if "object is not subscriptable" in str(e):
             return ({"Error": "Invalid data format", "message":"User Not found"}), 400
         return (f"fatal Error when selecting {str(e)}"), 500
-
-    # finally:
-        # try:
-        #     cur.close()
-        #     conn.close()
-        # except Exception as cleanup_error:
-        #     return jsonify({"Error": f"{(str(cleanup_error))}"}), 500
 
 
 if __name__ == "__main__":
